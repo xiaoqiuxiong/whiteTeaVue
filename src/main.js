@@ -34,7 +34,8 @@ import {
   Stepper,
   List,
   Rate,
-  Skeleton
+  Skeleton,
+  Image
   
 } from "vant"
 
@@ -47,6 +48,7 @@ Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Ce
   .use(List)
   .use(Rate)
   .use(Skeleton)
+  .use(Image)
 
 Vue.use(utils);
 // 全局注册filter

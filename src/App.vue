@@ -42,7 +42,7 @@ body,
 #app {
   height: 100%;
   color: #323233;
-  // background-color: #f2f3f5;
+  background-color: #f2f3f5;
   font-family: "PingFang SC", Helvetica, "STHeiti STXihei", "Microsoft YaHei",
     Tohoma, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
