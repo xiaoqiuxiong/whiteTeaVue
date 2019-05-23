@@ -1,10 +1,10 @@
 <template>
   <div class="register">
-    <div class="close">
+    <div class="close-area">
       <van-icon @click="skipHomeFn" name="close" size="0.5rem"/>
     </div>
     <!-- tab -->
-    <div class="app-tab">
+    <div class="app-tab-area">
       <van-row type="flex" justify="center">
         <van-col span="10">
           <van-tabs v-model="active" @click="onClick">
@@ -15,11 +15,17 @@
       </van-row>
     </div>
     <!-- 表单 -->
-    <div class="form">
+    <div class="form-area">
       <van-row type="flex" justify="center">
         <van-col span="22">
           <van-cell-group>
-            <van-field v-model="phone" clearable label="手机号码" placeholder="请输入手机号码"/>
+            <van-field
+              v-model="phone"
+              clearable
+              label="手机号码"
+              placeholder="请输入手机号码"
+              :error-message="phoneError"
+            />
             <van-field
               v-model="password"
               :type="passwordEyeType"
@@ -27,41 +33,125 @@
               placeholder="请输入登录密码"
               :right-icon="passwordEye"
               @click-right-icon="passwordEyeFn"
+              :error-message="passwordError"
             />
-            <!-- 下边框 -->
-            <div class="line">
-              <div class="van-hairline--bottom"></div>
+
+            <div class="van-cell register-btn">
+              <van-button round block type="primary" @click="actionLogin">登 录</van-button>
             </div>
-           <div class="forget-password">
-             <router-link :to="{}">忘记密码</router-link>
-           </div>
-           <div class="van-cell register-btn">
-              <van-button round block type="primary">登 录</van-button>
-           </div>
+            <div class="forget-password">
+              <router-link :to="{name: 'FindPwd'}">忘记密码？</router-link>
+            </div>
           </van-cell-group>
         </van-col>
       </van-row>
+    </div>
+    <!-- 第三方登录 -->
+    <div v-if="isWeiXin" class="other-area">
+      <div class="top">
+        <div class="line"></div>
+        <div class="txt">第三方登录</div>
+        <div class="line"></div>
+      </div>
+      <div class="bottom">
+        <div class="item" v-if="isWeiXin"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import md5 from 'js-md5';
+import { apiLogin } from "@/request/api";
+import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
   data() {
     return {
       active: 1,
       phone: "",
+      phoneError: "",
       password: "",
+      passwordError: "",
       passwordEye: "closed-eye",
-      passwordEyeType: "password",
+      passwordEyeType: "password"
+    };
+  },
+  created () {
+    // 判断是否存有token
+    if(this.$store.state.token){
+      this.$router.push({name: 'Home'})
     };
   },
   methods: {
+    // 登录数据判断
+    actionLogin() {
+      // 数据判断
+      let isTrue = true;
+      // 手机号码
+      if (this.phone.length == 0) {
+        isTrue = false;
+        this.phoneError = "请输入手机号码";
+      } else if (this.phone.length != 11) {
+        isTrue = false;
+        this.phoneError = "请输入正确的手机号码";
+      } else {
+        this.phoneError = "";
+      }
+      // 密码
+      if (this.password.length == "") {
+        isTrue = false;
+        this.passwordError = "请输入登录密码";
+      } else if (this.password.length < 6 || this.password.length > 20) {
+        isTrue = false;
+        this.passwordError = "登录密码不能少于 6位/密码不能超过20位";
+      } else {
+        this.passwordError = "";
+      }
+      if (isTrue) this.actionLoginAxios();
+    },
+    // 登录数据提交
+    actionLoginAxios() {
+      apiLogin({
+        data: crypto.encrypt(
+          JSON.stringify({
+            loginType: 1,
+            user: {
+              user_id: 0,
+              password: md5(this.password),
+              phone: this.phone,
+              username: ""
+            }
+          })
+        )
+      })
+        .then(result => {
+          
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data))
+            this.$store.commit("setToken", result.token);
+            this.$store.commit("setUserInfo", JSON.stringify(result.info));
+            Toast({
+              type: 'success',
+              message: '登录成功',
+              duration: 1500,
+              onClose: ()=>{
+                this.$router.push({name: 'Home'})
+              }
+            })
+            
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast("数据请求失败");
+        });
+    },
     onClick(index, title) {
-      if(index == 0){
+      if (index == 0) {
         this.$router.push({ name: "Register" });
-      }else{
+      } else {
         this.$router.push({ name: "Login" });
       }
     },
@@ -77,7 +167,7 @@ export default {
         this.passwordEyeType = "password";
       }
     },
-    showUserAgreementFn(e){
+    showUserAgreementFn(e) {
       // 阻止事件冒泡
       e.stopPropagation();
     }
@@ -87,26 +177,25 @@ export default {
 
 
 <style lang="less">
-
 .register {
   height: 100%;
-  background-image: url('../assets/images/register_bg.png');
+  background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;
-  .forget-password{
-    margin-top: 20px;
+  .forget-password {
+    margin-top: 10px;
     text-align: right;
     padding: 0 0.4rem;
-    a{
+    a {
       color: #999;
     }
   }
-  .line{
+  .line {
     padding-left: 0.4rem;
     padding-right: 0.4re;
   }
-  .close {
+  .close-area {
     padding-top: 14px;
     padding-right: 14px;
     box-sizing: border-box;
@@ -115,7 +204,7 @@ export default {
       padding: 10px;
     }
   }
-  .app-tab {
+  .app-tab-area {
     [class*="van-hairline"]::after {
       border: 0;
     }
@@ -123,7 +212,7 @@ export default {
   .van-tab--active {
     font-weight: 700;
   }
-  .form {
+  .form-area {
     margin-top: 40px;
     .van-cell {
       margin-top: 10px;
@@ -133,27 +222,65 @@ export default {
     }
     .van-cell-group {
       margin-top: 10px;
-      .van-cell {
-      }
     }
     .van-hairline--top-bottom::after {
       border-color: #fff;
     }
+    .register-btn {
+      margin-top: 20px;
+    }
+    .register-btn:after {
+      border-width: 0 !important;
+    }
   }
-  .van-checkbox__icon img{
+  .van-checkbox__icon img {
     width: 12px;
     height: 12px;
     margin-top: 5px;
     display: inline-block;
   }
-  .user-agreement{
-    &:after{
-      border-width: 0 !important
-    };
-    .van-checkbox__label{
-      color: #999; 
-      span{
-        color: #FD751E;
+  .user-agreement {
+    &:after {
+      border-width: 0 !important;
+    }
+    .van-checkbox__label {
+      color: #999;
+      span {
+        color: #fd751e;
+      }
+    }
+  }
+  .other-area {
+    margin-top: 40px;
+    .top {
+      width: 70%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .line {
+        height: 1px;
+        flex: 1;
+        background-color: #333;
+      }
+      .txt {
+        display: inline-block;
+        padding: 0 10px;
+        color: #333;
+      }
+    }
+    .bottom {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .item {
+        height: 64px;
+        width: 64px;
+        background-image: url("../assets/images/wechat_login.png");
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center center;
       }
     }
   }

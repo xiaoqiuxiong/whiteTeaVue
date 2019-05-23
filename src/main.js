@@ -4,7 +4,9 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import 'lib-flexible'
-
+import utils from '@/utils'
+import filters from '@/filters'
+import store from './store'
 import {
   Row,
   Col,
@@ -13,11 +15,46 @@ import {
   Icon,
   Field,
   Button,
-  Cell, CellGroup,
-  Checkbox, CheckboxGroup
+  Cell,
+  CellGroup,
+  Checkbox,
+  CheckboxGroup,
+  Tabbar,
+  TabbarItem,
+  NavBar,
+  Search,
+  Swipe,
+  SwipeItem,
+  Lazyload,
+  Tag,
+  GoodsAction,
+  GoodsActionIcon,
+  GoodsActionButton,
+  ActionSheet,
+  Stepper,
+  List,
+  Rate,
+  Skeleton
+  
 } from "vant"
-Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Cell).use(CellGroup).use(Checkbox).use(CheckboxGroup)
 
+Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Cell).use(CellGroup).use(Checkbox).use(CheckboxGroup).use(NavBar)
+  .use(Tabbar).use(TabbarItem).use(Search).use(Swipe).use(SwipeItem).use(Lazyload).use(Tag).use(GoodsAction)
+  .use(GoodsActionIcon)
+  .use(GoodsActionButton)
+  .use(ActionSheet)
+  .use(Stepper)
+  .use(List)
+  .use(Rate)
+  .use(Skeleton)
+
+Vue.use(utils);
+// 全局注册filter
+Vue.filter('moneyFilter', filters.toMoney);
+Vue.filter('timeFilter', filters.toTime);
+Vue.filter('dateFilter', filters.toDate);
+// import FastClick from 'fastclick'
+// FastClick.attach(document.body)
 
 Vue.config.productionTip = false
 
@@ -25,6 +62,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   components: {
     App
   },
