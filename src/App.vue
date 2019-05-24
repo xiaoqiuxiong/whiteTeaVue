@@ -8,22 +8,7 @@
 export default {
   name: "App",
   mounted() {
-    this.checkToken();
     document.title = this.$route.meta.title;
-  },
-  methods: {
-    checkToken() {
-      // 判断缓存是否有token，如果没有就跳到登录页面
-      if (this.$store.state.token) {
-        if (this.$route.name == "Login" || this.$route.name == "Register") {
-          this.$router.push({ name: "Home" });
-        }
-      } else {
-        if (this.$route.name != "Login" || this.$route.name != "Register") {
-          this.$router.push({ name: "Login" });
-        }
-      }
-    }
   },
   watch: {
     $route(to, from) {
@@ -34,6 +19,14 @@ export default {
 </script>
 
 <style lang="less">
+.nothing-area{
+  width: 100vw;
+  height: 100vw;
+  background-image: url(./assets/images/nothing.png);
+  background-size: 40%;
+  background-position: center 40px;
+  background-repeat: no-repeat;
+}
 #app {
   font-size: 0.37333rem;
 }

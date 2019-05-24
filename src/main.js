@@ -35,7 +35,8 @@ import {
   List,
   Rate,
   Skeleton,
-  Image
+  Image,
+  PullRefresh 
   
 } from "vant"
 
@@ -49,12 +50,14 @@ Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Ce
   .use(Rate)
   .use(Skeleton)
   .use(Image)
+  .use(PullRefresh)
 
 Vue.use(utils);
 // 全局注册filter
 Vue.filter('moneyFilter', filters.toMoney);
 Vue.filter('timeFilter', filters.toTime);
 Vue.filter('dateFilter', filters.toDate);
+Vue.filter('numberFilter', filters.toThousands);
 // import FastClick from 'fastclick'
 // FastClick.attach(document.body)
 

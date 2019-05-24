@@ -80,7 +80,6 @@ export default {
       likeImg: require("../assets/images/icon_good_reputation.png")
     };
   },
-  created() {},
   methods: {
     showPic(index,index1) {
       let showPicArray = []
@@ -91,9 +90,6 @@ export default {
         lazyLoad: true, 
         images: showPicArray,
         startPosition: index1,
-        onClose() {
-          // do something
-        }
       });
     },
     changeTab(req_type) {

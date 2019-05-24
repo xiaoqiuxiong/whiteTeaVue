@@ -313,11 +313,13 @@ export default {
 
 <style lang="less">
 .register {
+  
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;
+  background-color: #fff;
   .line {
     padding-left: 0.4rem;
     padding-right: 0.4re;
@@ -349,8 +351,6 @@ export default {
     }
     .van-cell-group {
       margin-top: 10px;
-      .van-cell {
-      }
     }
     .van-hairline--top-bottom::after {
       border-color: #fff;

@@ -178,6 +178,7 @@ export default {
 
 <style lang="less">
 .register {
+   background-color: #fff;
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;

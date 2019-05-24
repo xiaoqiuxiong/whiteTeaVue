@@ -1,5 +1,7 @@
 // 在http.js中引入axios
-import axios from 'axios'; // 引入axios
+import axios from 'axios';
+import store from '../store' // 引入axios
+import router from "@/router";
 // vant的toast提示框组件，大家可根据自己的ui组件更改。
 import {
   Toast
@@ -14,7 +16,42 @@ if (process.env.NODE_ENV == 'development') {
 }
 axios.defaults.timeout = 5000;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
-
+// 拦截请求
+// 添加请求拦截器，在请求头中加token
+axios.interceptors.request.use(
+  config => {
+    if (store.state.token) {
+      config.headers.Authorization = store.state.token;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  });
+// 相应请求
+axios.interceptors.response.use(
+  response => {
+    if (response.data.code == -9999) {
+      store.commit('setToken', '')
+      router.replace({
+        name: 'Login'
+      })
+    }
+    return response
+  },
+  err => {
+    if (err.response) {
+      switch (err.response.status) {
+        case 401:
+          localStorage.removeItem('token');
+          router.replace({
+            name: 'Login'
+          })
+      }
+    }
+    return Promise.reject(err)
+  }
+)
 /**
  * get方法，对应get请求
  * @param {String} url [请求的url地址]
@@ -45,12 +82,7 @@ export function post(url, params) {
   return new Promise((resolve, reject) => {
     axios.post(url, params)
       .then(res => {
-        // if (res.data.code == 0 || res.data.code == 3122) {
-        //   resolve(res.data);
-        // } else {
-        //   reject(res.msg)
-        // }
-          resolve(res.data);
+        resolve(res.data);
       })
       .catch(err => {
         Toast({
