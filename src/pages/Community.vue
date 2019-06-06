@@ -12,7 +12,7 @@
           <div class="bottom-item-top">{{total_income | numberFilter}}</div>
           <div class="bottom-item-bottom">社区收入</div>
         </div>
-        <div class="bottom-item" @click="$router.push({name: 'communityTeam'})">
+        <div class="bottom-item" @click="$router.push({name: 'CommunityTeam'})">
           <div class="bottom-item-top">{{teamTatol | numberFilter}}</div>
           <div class="bottom-item-bottom">我的团队</div>
         </div>

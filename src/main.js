@@ -36,8 +36,20 @@ import {
   Rate,
   Skeleton,
   Image,
-  PullRefresh 
-  
+  PullRefresh,
+  Uploader,
+  DatetimePicker,
+  Dialog,
+  AddressList,
+  SwipeCell,
+  Picker,
+  SubmitBar,
+  RadioGroup,
+  Radio,
+  Card,
+  Step, Steps
+
+
 } from "vant"
 
 Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Cell).use(CellGroup).use(Checkbox).use(CheckboxGroup).use(NavBar)
@@ -51,6 +63,18 @@ Vue.use(Tab).use(Tabs).use(Row).use(Col).use(Icon).use(Field).use(Button).use(Ce
   .use(Skeleton)
   .use(Image)
   .use(PullRefresh)
+  .use(Uploader)
+  .use(DatetimePicker)
+  .use(Dialog)
+  .use(AddressList)
+  .use(SwipeCell)
+  .use(Picker)
+  .use(SubmitBar)
+  .use(RadioGroup)
+  .use(Radio)
+  .use(Card)
+  .use(Step)
+  .use(Steps)
 
 Vue.use(utils);
 // 全局注册filter

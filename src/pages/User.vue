@@ -2,11 +2,11 @@
   <div>
     <!-- 用户信息 area -->
     <div class="usercenter-area">
-      <div class="cont">
+      <div class="cont" @click="$router.push({name: 'UserEdit'})">
         <div class="left">
-          <van-image fit="cover" v-lazy :src="userInfo.headimg"/>
+          <van-image v-if="userInfo.user_info" fit="cover" v-lazy :src="userInfo.user_info.headimg"/>
         </div>
-        <div class="right">{{userInfo.user_name}}</div>
+        <div class="right" v-if="userInfo.user_info">{{userInfo.user_info.user_name}}</div>
       </div>
     </div>
     <div class="bottom-area">
@@ -21,14 +21,14 @@
               <div class="left"></div>
               <div class="right">我的账户</div>
             </div>
-            <div class="bottom">¥{{userInfo.user_money | numberFilter}}</div>
+            <div class="bottom" v-if="userInfo.user_info">¥{{userInfo.user_info.user_money | numberFilter}}</div>
           </div>
           <div class="right" @click="$router.push({name: 'MyJibei'})">
             <div class="top">
               <div class="left right-left"></div>
               <div class="right">我的积贝</div>
             </div>
-            <div class="bottom">{{userInfo.rank_points | numberFilter}}</div>
+            <div class="bottom" v-if="userInfo.user_info">{{userInfo.user_info.rank_points | numberFilter}}</div>
           </div>
         </div>
       </div>
@@ -36,10 +36,10 @@
       <div class="options-list-area option2">
         <div class="top">
           <div class="left">我的订单</div>
-          <div class="right">
+          <router-link :to="{name: 'Orders'}" class="right">
             查看更多
             <van-icon name="arrow"/>
-          </div>
+          </router-link>
         </div>
         <div class="bottom">
           <div class="item">
@@ -70,14 +70,14 @@
           <div class="left">我的工具</div>
         </div>
         <div class="bottom">
-          <div class="item">
+          <router-link :to="{name: 'Authentication'}" class="item">
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">实名认证</div>
-          </div>
-          <div class="item">
+          </router-link>
+          <router-link :to="{name: 'BankCard'}" class="item">
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">我的银行卡</div>
-          </div>
+          </router-link>
           <div class="item">
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">邀请好友</div>
@@ -97,13 +97,28 @@
 </template>
 
 <script>
+import { apiUserIndex } from "@/request/api";
+import crypto from "@/cryptoUtil";
+import { Toast } from "vant";
 export default {
   data() {
     return {
-      userInfo: JSON.parse(this.$store.state.userInfo)
+      userInfo: {}
     };
   },
+  created () {
+    this.initUserInfo();
+  },
   methods: {
+    initUserInfo(){
+      apiUserIndex().then((result) => {
+        if(result.code == 0){
+          this.userInfo = result.data
+        }
+      }).catch((err) => {
+        Toast('网络故障，请刷新重试')
+      });
+    },
     logout(){
       this.$store.commit('setToken', '')
       this.$router.replace({name: 'Login'})

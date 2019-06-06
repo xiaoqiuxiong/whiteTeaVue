@@ -6,20 +6,25 @@ import router from "@/router";
 import {
   Toast
 } from 'vant';
-// 环境的切换
-if (process.env.NODE_ENV == 'development') {
-  axios.defaults.baseURL = 'apis/';
-} else if (process.env.NODE_ENV == 'debug') {
-  axios.defaults.baseURL = 'apis/';
-} else if (process.env.NODE_ENV == 'production') {
-  axios.defaults.baseURL = 'apis/';
-}
-axios.defaults.timeout = 5000;
+// // 环境的切换
+// if (process.env.NODE_ENV == 'development') {
+//   axios.defaults.baseURL = 'apis/';
+// } else if (process.env.NODE_ENV == 'debug') {
+//   axios.defaults.baseURL = 'apis/';
+// } else if (process.env.NODE_ENV == 'production') {
+//   axios.defaults.baseURL = 'apis/';
+// }
+axios.defaults.timeout = 3000;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+let toastLoading;
 // 拦截请求
 // 添加请求拦截器，在请求头中加token
 axios.interceptors.request.use(
   config => {
+    toastLoading = Toast.loading({
+      // mask: true,
+      message: '加载中...'
+    });
     if (store.state.token) {
       config.headers.Authorization = store.state.token;
     }
@@ -31,6 +36,7 @@ axios.interceptors.request.use(
 // 相应请求
 axios.interceptors.response.use(
   response => {
+    toastLoading.clear()
     if (response.data.code == -9999) {
       store.commit('setToken', '')
       router.replace({
@@ -40,6 +46,7 @@ axios.interceptors.response.use(
     return response
   },
   err => {
+    toastLoading.clear()
     if (err.response) {
       switch (err.response.status) {
         case 401:
@@ -85,12 +92,7 @@ export function post(url, params) {
         resolve(res.data);
       })
       .catch(err => {
-        Toast({
-          type: 'fail',
-          message: '网络故障,请刷新重试',
-          mask: true,
-          duration: 0
-        })
+        Toast('网络故障,请稍后刷新重试')
         reject(err.data)
       })
   });

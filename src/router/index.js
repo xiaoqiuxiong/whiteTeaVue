@@ -13,13 +13,25 @@ import Goods from '@/pages/Goods'
 import Comment from '@/pages/Comment'
 import CommunityPerformance from '@/pages/CommunityPerformance'
 import CommunityTeam from '@/pages/CommunityTeam'
-import MyProperty from '@/pages//MyProperty';
-import MyJibei from '@/pages//MyJibei';
-
+import MyProperty from '@/pages/MyProperty';
+import MyJibei from '@/pages/MyJibei';
+import UserEdit from '@/pages/UserEdit';
+import Address from '@/pages/Address';
+import AddressEdit from '@/pages/AddressEdit';
+import AddAddress from '@/pages/AddAddress';
+import Authentication from '@/pages/Authentication';
+import BankCard from '@/pages/BankCard';
+import AddBankCard from '@/pages/AddBankCard';
+import SureOrder from '@/pages/SureOrder';
+import PayState from '@/pages/PayState';
+import Orders from '@/pages/Orders';
+import OrderDetail from '@/pages/OrderDetail';
+import OrderLogistics from '@/pages/OrderLogistics';
 
 Vue.use(Router)
 
 let router = new Router({
+  // mode: 'history',
   routes: [{
       path: '/',
       name: 'Main',
@@ -53,6 +65,11 @@ let router = new Router({
           component: User
         },
       ]
+    },
+
+    {
+      path: '/static/MP_verify_eB3s1tHzWkGZmrjF.txt',
+      redirect: '/MP_verify_eB3s1tHzWkGZmrjF.txt'
     },
     {
       path: '/register',
@@ -142,6 +159,102 @@ let router = new Router({
       },
       component: MyJibei
     },
+    {
+      path: '/userEdit',
+      name: 'UserEdit',
+      meta: {
+        title: '个人信息'
+      },
+      component: UserEdit
+    },
+    {
+      path: '/address',
+      name: 'Address',
+      meta: {
+        title: '地址管理'
+      },
+      component: Address
+    },
+    {
+      path: '/addressEdit',
+      name: 'AddressEdit',
+      meta: {
+        title: '地址编辑'
+      },
+      component: AddressEdit
+    },
+    {
+      path: '/addAddress',
+      name: 'AddAddress',
+      meta: {
+        title: '地址增加'
+      },
+      component: AddAddress
+    },
+    {
+      path: '/authentication',
+      name: 'Authentication',
+      meta: {
+        title: '实名认证'
+      },
+      component: Authentication
+    },
+    {
+      path: '/bankcard',
+      name: 'BankCard',
+      meta: {
+        title: '我的银行卡'
+      },
+      component: BankCard
+    },
+    {
+      path: '/addBankcard',
+      name: 'AddBankCard',
+      meta: {
+        title: '添加银行卡'
+      },
+      component: AddBankCard
+    },
+    {
+      path: '/sureOrder',
+      name: 'SureOrder',
+      meta: {
+        title: '确认订单'
+      },
+      component: SureOrder
+    },
+    {
+      path: '/payState',
+      name: 'PayState',
+      meta: {
+        title: '支付订单'
+      },
+      component: PayState
+    },
+    {
+      path: '/orders',
+      name: 'Orders',
+      meta: {
+        title: '我的订单'
+      },
+      component: Orders
+    },
+    {
+      path: '/orderDetail',
+      name: 'OrderDetail',
+      meta: {
+        title: '订单详情'
+      },
+      component: OrderDetail
+    },
+    {
+      path: '/orderLogistics',
+      name: 'OrderLogistics',
+      meta: {
+        title: '物流跟踪'
+      },
+      component: OrderLogistics
+    },
   ]
 })
 
@@ -149,15 +262,15 @@ let router = new Router({
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
 router.beforeEach((to, from, next) => {
   if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment') {
-    next();
+  next();
   } else {
-    let token = localStorage.getItem('token');
-    if (token == null || token == '') {
-      console.log('#############################################');
-      next('/login');
-    } else {
-      next();
-    }
+  let token = localStorage.getItem('token');
+  if (token == null || token == '') {
+    console.log('#############################################');
+    next('/login');
+  } else {
+    next();
+  }
   }
 });
 

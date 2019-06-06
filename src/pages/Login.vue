@@ -130,7 +130,6 @@ export default {
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data))
             this.$store.commit("setToken", result.token);
-            this.$store.commit("setUserInfo", JSON.stringify(result.info));
             Toast({
               type: 'success',
               message: '登录成功',
@@ -145,7 +144,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast("数据请求失败");
+          Toast("登录失败，请刷新重试");
         });
     },
     onClick(index, title) {

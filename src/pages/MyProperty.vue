@@ -9,7 +9,7 @@
     <!-- 总余额 -->
     <div class="income-title-area">
       <div class="top">账户余额(元)</div>
-      <div  v-if="userInfo.user_info" class="bottom">{{userInfo.user_info.user_money}}</div>
+      <div v-if="userInfo.user_info" class="bottom">{{userInfo.user_info.user_money}}</div>
     </div>
     <!-- 提现按钮 area -->
     <van-cell class="wd-area" :icon="wdimg" is-link title="提现" to="index"/>
@@ -84,7 +84,8 @@ export default {
       this.finished = false;
       this.list = [];
       this.page_num = 0;
-      this.timer = null;
+      this.timer1 = null;
+      this.timer2 = null;
       this.onLoad();
     },
     getUserInfo() {
@@ -99,19 +100,23 @@ export default {
         });
     },
     onRefresh() {
-      if (!this.timer) {
-        this.timer = setTimeout(() => {
+      if (!this.timer1) {
+        this.timer1 = setTimeout(() => {
           this.isRefresh = false;
           this.finished = false;
           this.list = [];
           this.page_num = 0;
           this.timer = null;
           this.onLoad();
-        }, 1000);
+        }, 500);
       }
     },
     onLoad() {
-      this.getAccountLog();
+      if (!this.timer2) {
+        this.timer2 = setTimeout(() => {
+          this.getAccountLog();
+        }, 500);
+      }
     },
     getAccountLog() {
       apiAccountLog({
@@ -138,9 +143,14 @@ export default {
             this.finished = true;
           }
           this.loading = false;
+          this.timer1 = null;
+          this.timer2 = null;
         })
         .catch(error => {
           console.log(error);
+          this.loading = false;
+          this.timer1 = null;
+          this.timer2 = null;
         });
     }
   }
