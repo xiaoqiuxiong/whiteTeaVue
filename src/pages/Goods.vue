@@ -1,5 +1,6 @@
 <template>
   <div ref="box" style="background: #fff;overflow: hidden;height:100vh">
+    <Menu ref="menu"></Menu>
     <van-skeleton
       title
       avatar-size="96vw"
@@ -13,7 +14,7 @@
         <!-- 原始顶部按钮 area -->
         <div class="old-btns-area" ref="oldtabArea">
           <div @click="returnPrePage" class="left"></div>
-          <div class="right"></div>
+          <div class="right"  @click="$refs.menu.isShow(true)"></div>
         </div>
         <!-- 导航 area -->
         <div class="tab-area" ref="tabArea">
@@ -27,7 +28,7 @@
               <li @click="changeTab(2)" v-bind:class="{ active: active == 2 }">详情</li>
             </ul>
           </div>
-          <div class="right"></div>
+          <div class="right"  @click="$refs.menu.isShow(true)"></div>
         </div>
         <!-- 轮播商品图 area -->
         <div v-if="goodsInfo.Banner" class="goods-swipe" ref="goodsSwipe">
@@ -168,7 +169,9 @@
                   <img v-if="goodsInfo.Banner" :src="goodsInfo.Banner[0].thumb_url" alt>
                 </div>
                 <div class="right">
-                  <div v-if="attr_info.attr_price">¥ {{(parseFloat(attr_info.attr_price) + parseFloat(goodsInfo.shop_price)) | moneyFilter}}</div>
+                  <div
+                    v-if="attr_info.attr_price"
+                  >¥ {{(parseFloat(attr_info.attr_price) + parseFloat(goodsInfo.shop_price)) | moneyFilter}}</div>
                   <div>库存 {{attr_info.attr_number || 0}}件</div>
                 </div>
               </div>
@@ -243,11 +246,15 @@
 </template>
 
 <script>
+import Menu from "../components/Menu.vue";
 import { apiGoods, apiBuyNow } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 
 export default {
+  components: {
+    Menu,
+  },
   data() {
     return {
       loading: true,
@@ -305,7 +312,12 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            this.$router.push({ name: "SureOrder", query: {cart_ids: JSON.parse(crypto.decrypt(result.data)).cart_id} });
+            this.$router.push({
+              name: "SureOrder",
+              query: {
+                cart_ids: JSON.parse(crypto.decrypt(result.data)).cart_id
+              }
+            });
           } else {
             Toast(result.msg);
           }

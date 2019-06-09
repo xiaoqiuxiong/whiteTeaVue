@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import md5 from 'js-md5';
+import md5 from "js-md5";
 import { apiLogin } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
@@ -77,11 +77,11 @@ export default {
       passwordEyeType: "password"
     };
   },
-  created () {
+  created() {
     // 判断是否存有token
-    if(this.$store.state.token){
-      this.$router.push({name: 'Home'})
-    };
+    if (this.$store.state.token) {
+      this.$router.push({ name: "Home" });
+    }
   },
   methods: {
     // 登录数据判断
@@ -126,19 +126,17 @@ export default {
         )
       })
         .then(result => {
-          
           if (result.code == 0) {
-            result = JSON.parse(crypto.decrypt(result.data))
+            result = JSON.parse(crypto.decrypt(result.data));
             this.$store.commit("setToken", result.token);
             Toast({
-              type: 'success',
-              message: '登录成功',
+              type: "success",
+              message: "登录成功",
               duration: 1500,
-              onClose: ()=>{
-                this.$router.push({name: 'Home'})
+              onClose: () => {
+                this.$router.push({ name: "Home" });
               }
-            })
-            
+            });
           } else {
             Toast(result.msg);
           }
@@ -176,8 +174,13 @@ export default {
 
 
 <style lang="less">
+html,
+body,
+#app {
+  height: 100%;
+}
 .register {
-   background-color: #fff;
+  background-color: #fff;
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;

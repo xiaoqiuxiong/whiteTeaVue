@@ -8,8 +8,9 @@
       left-arrow
       @click-left="returnPrePage"
     >
-      <van-icon name="weapp-nav" slot="right"/>
+      <van-icon @click="$refs.menu.isShow(true)" name="weapp-nav" slot="right"/>
     </van-nav-bar>
+    <Menu ref="menu"></Menu>
     <!-- tab area -->
     <div class="comment-tab">
       <div
@@ -95,12 +96,14 @@ import {
   apiConfirmOrder
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
-import { Toast,Dialog } from "vant";
+import { Toast, Dialog } from "vant";
 import BackTop from "../components/BackTop.vue";
+import Menu from "../components/Menu.vue";
 
 export default {
   components: {
-    BackTop
+    BackTop,
+    Menu
   },
   data() {
     return {
@@ -144,7 +147,28 @@ export default {
       type: ""
     };
   },
-  created() {},
+  created() {
+    this.type = this.$route.query.type;
+    switch (this.type) {
+      case "await_pay":
+        this.commentTabActive = 1;
+        break;
+      case "await_ship":
+        this.commentTabActive = 2;
+        break;
+      case "await_receipt":
+        this.commentTabActive = 3;
+        break;
+      case "await_comment":
+        this.commentTabActive = 5;
+        break;
+      case "contract":
+        this.commentTabActive = 4;
+        break;
+      default:
+        this.commentTabActive = 0;
+    }
+  },
   methods: {
     orderLogistics(order_id) {
       this.$router.push({

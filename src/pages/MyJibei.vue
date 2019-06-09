@@ -1,22 +1,24 @@
 <template>
   <div>
     <van-nav-bar
+      fixed
       class="nav-area"
       :title="$route.meta.title"
       right-text="了解积贝"
       left-arrow
       @click-left="returnPrePage"
+      @click-right="$router.push({name: 'JibeiRule'})"
     />
     <!-- 总余额 -->
-    <div class="income-title-area">
-      <div class="item">
+    <div class="income-title-area" v-if="userInfo.user_info">
+      <router-link :to="{name: 'JibeiLog'}" class="item">
         <div class="top">{{userInfo.user_info.pay_points | moneyFilter}}</div>
         <div class="bottom">积贝</div>
-      </div>
-      <div class="item">
+      </router-link>
+      <router-link :to="{name: 'FundIntegral'}" class="item">
         <div class="top">{{userInfo.user_info.rank_points | moneyFilter}}</div>
         <div class="bottom">基金积贝</div>
-      </div>
+      </router-link>
       <div class="item">
         <div class="top">{{userInfo.user_info.wait_release | moneyFilter}}</div>
         <div class="bottom">待释放积贝</div>
@@ -35,15 +37,10 @@
           @load="onLoad"
         >
           <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="top">
-              <div class="left">{{item.title}}</div>
-              <div class="right">{{item.change_time | timeFilter}}</div>
+            <div class="img-box">
+              <van-image lazy-load fill="cover" :src="item.img_url"/>
             </div>
-            <div class="bottom">
-              <div class="left">{{item.change_desc}}</div>
-              <div class="right green" v-if="item.user_money<0">{{item.user_money | numberFilter}}</div>
-              <div class="right red" v-else>+{{item.user_money | numberFilter}}</div>
-            </div>
+            <div class="title van-ellipsis">{{item.title}}</div>
           </div>
         </van-list>
       </van-pull-refresh>
@@ -53,7 +50,7 @@
 </template>
 
 <script>
-import { apiUserIndex, apiAccountLog } from "@/request/api";
+import { apiUserIndex, apiJibeiUseWay } from "@/request/api";
 import crypto from "@/cryptoUtil";
 export default {
   data() {
@@ -75,7 +72,8 @@ export default {
       page_num: 0,
       totalIncome: 0,
       isRefresh: false,
-      timer: null,
+      timer1: null,
+      timer2: null,
       userInfo: {}
     };
   },
@@ -91,7 +89,8 @@ export default {
       this.finished = false;
       this.list = [];
       this.page_num = 0;
-      this.timer = null;
+      this.timer1 = null;
+      this.timer2 = null;
       this.onLoad();
     },
     getUserInfo() {
@@ -106,32 +105,31 @@ export default {
         });
     },
     onRefresh() {
-      if (!this.timer) {
-        this.timer = setTimeout(() => {
+      if (!this.timer1) {
+        this.timer1 = setTimeout(() => {
           this.isRefresh = false;
           this.finished = false;
           this.list = [];
           this.page_num = 0;
-          this.timer = null;
+          this.timer1 = null;
+          this.timer2 = null;
           this.onLoad();
-        }, 1000);
+        }, 500);
       }
     },
     onLoad() {
-      this.getAccountLog();
+      this.loading = true;
+      if (!this.timer2) {
+        this.timer2 = setTimeout(() => {
+          this.getApiJibeiUseWay();
+        }, 500);
+      }
     },
-    getAccountLog() {
-      apiAccountLog({
-        data: crypto.encrypt(
-          JSON.stringify({
-            type: this.sheetActive,
-            pageNum: this.page_num
-          })
-        )
-      })
+    getApiJibeiUseWay() {
+      apiJibeiUseWay()
         .then(response => {
           if (response.code == 0) {
-            response = JSON.parse(crypto.decrypt(response.data));
+            response = response.data;
             if (response.length) {
               this.page_num++;
               this.list = this.list.concat(response);
@@ -145,6 +143,8 @@ export default {
             this.finished = true;
           }
           this.loading = false;
+          this.timer1 = null;
+          this.timer2 = null;
         })
         .catch(error => {
           console.log(error);
@@ -155,7 +155,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.van-nav-bar__text{
+.van-nav-bar__text {
   color: #666;
   font-size: 12px;
 }
@@ -173,23 +173,25 @@ export default {
   background-color: #f5f5f5;
 }
 .income-title-area {
+  margin-top: 46px;
   background-image: url(../assets/images/jbbg.png);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  color: #c9a273;
+
   height: 146px;
   display: flex;
   align-items: center;
   justify-content: space-around;
   .item {
-    flex: 1;  
+    color: #c9a273;
+    flex: 1;
     text-align: center;
     border-right: 1px solid #c9a273;
-    &:last-child{
+    &:last-child {
       border: 0;
     }
-    .top{
+    .top {
       font-size: 18px;
     }
     .bottom {
@@ -199,39 +201,29 @@ export default {
   }
 }
 .income-list-area {
-  .item {
+  .van-list {
+    font-size: 0;
+    padding: 10px;
+    box-sizing: border-box;
     background-color: #fff;
-    padding: 12px 16px;
+  }
+  .item {
+    display: inline-block;
+
+    padding: 6px;
     font-size: 12px;
-    border-bottom: 1px solid #f5f5f5;
-    .top {
-      display: flex;
-      justify-content: space-between;
-      .left {
-        font-size: 14px;
-      }
-      .right {
-        color: #999;
-      }
+    width: 50%;
+    box-sizing: border-box;
+    border-radius: 6px;
+    .title {
+      margin-top: 10px;
+      padding-left: 6px;
+      box-sizing: border-box;
     }
-    .bottom {
-      padding-top: 10px;
-      display: flex;
-      justify-content: space-between;
-      .left {
-        font-size: 12px;
-        color: #999;
-      }
-      .right {
-        font-size: 16px;
-        color: #ff560a;
-        &.green {
-          color: #28d300;
-        }
-        &.red {
-          color: #f71842;
-        }
-      }
+    .img-box {
+      height: 90px;
+      overflow: hidden;
+      border-radius: 6px;
     }
   }
 }

@@ -9,32 +9,51 @@
       <div class="center">超级社区</div>
       <div class="bottom">
         <div class="bottom-item">
-          <div class="bottom-item-top">{{total_income | numberFilter}}</div>
+          <div class="bottom-item-top">{{total_income | moneyFilter}}</div>
           <div class="bottom-item-bottom">社区收入</div>
         </div>
         <div class="bottom-item" @click="$router.push({name: 'CommunityTeam'})">
-          <div class="bottom-item-top">{{teamTatol | numberFilter}}</div>
+          <div class="bottom-item-top">{{teamTatol}}</div>
           <div class="bottom-item-bottom">我的团队</div>
         </div>
       </div>
     </div>
     <!-- 社区收入记录title area -->
-    <div class="income-title-area">
+    <div v-show="!searchShow" class="income-title-area">
       收入记录
-      <van-icon name="search" size="24px"/>
+      <van-icon @click="searchShow = true" name="search" size="24px"/>
+    </div>
+    <!-- search area -->
+    <div class="search-area" v-show="searchShow">
+      <van-search
+        class="search-box"
+        shape="round"
+        show-action
+        @input="onSearch"
+        @cancel="onCancel"
+        placeholder="请输入会员名称或者订单编号"
+        v-model="searchValue"
+      />
     </div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
       <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list v-model="loading" :finished="finished" finished-text="没有数据了" error-text="数据加载失败了" @load="onLoad">
-          <div  class="item" v-for="(item, index) in list" :key="index">
+        <van-list
+          v-model="loading"
+          :finished="finished"
+          finished-text="没有数据了"
+          error-text="数据加载失败了"
+          @load="onLoad"
+        >
+          <div class="item" v-for="(item, index) in list" :key="index">
             <div class="top">
               <div class="left">{{item.order_sn}}</div>
               <div class="right">{{item.time | timeFilter}}</div>
             </div>
             <div class="bottom">
               <div class="left">{{item.desc}}</div>
-              <div class="right">{{item.amount | numberFilter}}</div>
+              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
             </div>
           </div>
         </van-list>
@@ -49,6 +68,8 @@ import crypto from "@/cryptoUtil";
 export default {
   data() {
     return {
+      searchValue: "",
+      searchShow: false,
       total_income: 0,
       list: [],
       loading: false,
@@ -64,6 +85,18 @@ export default {
     this.getMyTeam();
   },
   methods: {
+    onSearch() {
+      this.isRefresh = false;
+      this.finished = false;
+      this.list = [];
+      this.page_num = 0;
+      this.irst_index = 0;
+      this.second_index = 0;
+      this.onLoad();
+    },
+    onCancel() {
+      this.searchShow = false;
+    },
     onRefresh() {
       setTimeout(() => {
         this.isRefresh = false;
@@ -84,7 +117,8 @@ export default {
           JSON.stringify({
             page_num: this.page_num,
             first_index: this.first_index,
-            second_index: this.second_index
+            second_index: this.second_index,
+            key: this.searchValue
           })
         )
       })
@@ -127,7 +161,15 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.nothing-area{
+.search-box {
+  background-color: #f5f5f5 !important;
+  padding: 0.134rem 0.42667rem;
+  padding-right: 0.2rem;
+  .van-search__content {
+    background-color: #fff;
+  }
+}
+.nothing-area {
   height: calc(100vh - 258px);
   background-color: #fff;
 }
@@ -187,7 +229,8 @@ export default {
   align-items: center;
   padding: 0 20px;
   i {
-    padding: 4px;
+    padding: 10px;
+    margin-right: -10px;
     box-sizing: border-box;
   }
 }
@@ -208,6 +251,14 @@ export default {
       .right {
         font-size: 16px;
         color: #ff560a;
+        padding-left: 20px;
+        box-sizing: border-box;
+        &.green {
+          color: #28d300;
+        }
+        &.red {
+          color: #f71842;
+        }
       }
     }
   }

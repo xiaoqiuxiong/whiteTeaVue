@@ -12,5 +12,4 @@ exports.install = function (Vue, options) {
   Vue.prototype.returnPrePage = function () {
     window.history.go(-1);
   };
-
 };

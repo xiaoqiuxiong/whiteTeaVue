@@ -312,8 +312,10 @@ export default {
 
 
 <style lang="less">
+html,body,#app{
+  height: 100%;
+}
 .register {
-  
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
@@ -359,10 +361,13 @@ export default {
   .van-checkbox__icon img {
     width: 12px;
     height: 12px;
-    margin-top: 5px;
     display: inline-block;
   }
   .user-agreement {
+    .van-checkbox {
+      display: flex;
+      align-items: center;
+    }
     &:after {
       border-width: 0 !important;
     }

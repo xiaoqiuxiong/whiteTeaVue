@@ -1,6 +1,7 @@
 <template>
   <div>
     <van-nav-bar
+      fixed
       class="nav-area"
       :title="$route.meta.title"
       left-arrow
@@ -9,10 +10,16 @@
     <!-- 总余额 -->
     <div class="income-title-area">
       <div class="top">账户余额(元)</div>
-      <div v-if="userInfo.user_info" class="bottom">{{userInfo.user_info.user_money}}</div>
+      <div v-if="userInfo.user_info" class="bottom">{{userInfo.user_info.user_money | moneyFilter}}</div>
     </div>
     <!-- 提现按钮 area -->
-    <van-cell class="wd-area" :icon="wdimg" is-link title="提现" to="index"/>
+    <van-cell
+      class="wd-area"
+      :icon="wdimg"
+      is-link
+      title="提现"
+      :to="{name: 'WithdrawCash'}"
+    />
     <!-- 账户明细 area -->
     <van-cell class="detail-area" title="账户明细">
       <van-icon @click="show = true" slot="right-icon" :name="rightIcon" class="custom-icon"/>
@@ -34,8 +41,8 @@
             </div>
             <div class="bottom">
               <div class="left">{{item.change_desc}}</div>
-              <div class="right green" v-if="item.user_money<0">{{item.user_money | numberFilter}}</div>
-              <div class="right red" v-else>+{{item.user_money | numberFilter}}</div>
+              <div class="right green" v-if="item.user_money<0">{{item.user_money | moneyFilter}}</div>
+              <div class="right red" v-else>+{{item.user_money | moneyFilter}}</div>
             </div>
           </div>
         </van-list>
@@ -57,7 +64,7 @@ export default {
         { name: "消费", value: 2 },
         { name: "对冲到账", value: 3 },
         { name: "基金积贝兑换", value: 4 },
-        { name: "查看全部", value: 0 }
+        { name: "全部", value: 0 }
       ],
       sheetActive: 0,
       wdimg: require("../assets/images/td.png"),
@@ -172,6 +179,7 @@ export default {
   background-color: #f5f5f5;
 }
 .income-title-area {
+  margin-top: 46px;
   background: linear-gradient(rgba(255, 168, 31, 1), rgba(255, 78, 8, 1));
   color: #fff;
   padding: 28px;

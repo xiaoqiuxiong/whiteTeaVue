@@ -14,13 +14,13 @@ export default {
     document.title = this.$route.meta.title;
   },
   created() {
-    // apiAllAddress()
-    //   .then(result => {
-    //     if (result.code == 0) {
-    //       this.$store.commit("setAllAddress", JSON.stringify(result.data));
-    //     }
-    //   })
-    //   .catch(err => {});
+      // apiAllAddress()
+      //   .then(result => {
+      //     if (result.code == 0) {
+      //       this.$store.commit("setAllAddress", JSON.stringify(result.data));
+      //     }
+      //   })
+      //   .catch(err => {});
   },
   watch: {
     $route(to, from) {
@@ -120,7 +120,6 @@ a {
     justify-content: flex-end;
   }
   .van-uploader {
-    width: 100%;
     padding-right: 36px;
   }
 }
@@ -138,7 +137,6 @@ a {
 html,
 body,
 #app {
-  height: 100%;
   color: #323233;
   background-color: #f2f3f5;
   font-family: "PingFang SC", Helvetica, "STHeiti STXihei", "Microsoft YaHei",

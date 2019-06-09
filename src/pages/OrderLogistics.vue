@@ -12,25 +12,20 @@
     </van-nav-bar>
     <div class="nav-bar-static-height"></div>
     <!-- 订单信息 area -->
-    <div class="order-msg-area">
-      <div>订单编号：</div>
-      <div>物流公司：</div>
-      <div>物流单号：</div>
+    <div class="order-msg-area tag-read" :data-clipboard-text="data.invoice_no" @click="copy">
+      <div>订单编号：{{data.delivery_id}}</div>
+      <div>物流公司：{{data.shipping_name}}</div>
+      <div class="copy-box">
+        物流单号：{{data.invoice_no}}
+        <span class="copy">复制</span>
+      </div>
     </div>
     <!-- 物流信息 area -->
     <div class="logis-msg-area">
-      <van-steps direction="vertical" :active="0">
-        <van-step>
-          <h3>【城市】物流状态1</h3>
-          <p>2016-07-12 12:40</p>
-        </van-step>
-        <van-step>
-          <h3>【城市】物流状态2</h3>
-          <p>2016-07-11 10:00</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
+      <van-steps active-color="#FD7023" direction="vertical" :active="0">
+        <van-step v-for="(item,index) in data.logs" :key="index">
+          <div>{{item.context}}</div>
+          <div>{{item.time}}</div>
         </van-step>
       </van-steps>
     </div>
@@ -38,6 +33,7 @@
 </template>
 
 <script>
+import Clipboard from "clipboard";
 import { apiWatchWuLiu } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast, Dialog } from "vant";
@@ -57,6 +53,20 @@ export default {
     this.fn_watchLogistics(this.order_id);
   },
   methods: {
+    copy() {
+      let clipboard = new Clipboard(".tag-read");
+      clipboard.on("success", e => {
+        Toast("复制成功");
+        // 释放内存
+        clipboard.destroy();
+      });
+      clipboard.on("error", e => {
+        // 不支持复制
+        Toast("该浏览器不支持自动复制");
+        // 释放内存
+        clipboard.destroy();
+      });
+    },
     fn_watchLogistics(order_id) {
       const orderId = Number(order_id);
       apiWatchWuLiu({
@@ -82,11 +92,21 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.order-msg-area{
+.order-msg-area {
   background-color: #fff;
-  div{
-    height: 30px;
-    line-height: 30px;
+  padding: 14px;
+  box-sizing: border-box;
+  font-size: 12px;
+  div {
+    height: 24px;
+    line-height: 24px;
   }
+}
+.logis-msg-area {
+  margin-top: 6px;
+}
+.copy {
+  color: #fd7023;
+  float: right;
 }
 </style>

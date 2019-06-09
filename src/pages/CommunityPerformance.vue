@@ -9,8 +9,11 @@
     />
     <!-- 社区收入记录title area -->
     <div class="income-title-area">
-      业绩总额：{{totalIncome | numberFilter}}
-      <van-icon name="search" size="24px"/>
+      <span>
+        业绩总额：
+        <span class="orange">{{totalIncome | moneyFilter}}</span>
+      </span>
+      <!-- <van-icon name="search" size="24px"/> -->
     </div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
@@ -29,7 +32,8 @@
             </div>
             <div class="bottom">
               <div class="left">{{item.desc}}</div>
-              <div class="right">{{item.amount | numberFilter}}</div>
+              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
             </div>
           </div>
         </van-list>
@@ -53,22 +57,21 @@ export default {
       timer: null
     };
   },
-  created() {
-  },
+  created() {},
   methods: {
     onRefresh() {
-      if(!this.timer){
-      this.timer = setTimeout(() => {
-        this.isRefresh = false;
-        this.finished = false;
-        this.list = [];
-        this.page_num = 0;
-        this.timer = null;
-      }, 1000);
+      if (!this.timer) {
+        this.timer = setTimeout(() => {
+          this.isRefresh = false;
+          this.finished = false;
+          this.list = [];
+          this.page_num = 0;
+          this.timer = null;
+        }, 1000);
       }
     },
     onLoad() {
-        this.getTotalIncome();
+      this.getTotalIncome();
     },
     getTotalIncome() {
       apiTotalIncome({
@@ -86,7 +89,7 @@ export default {
             if (response.order_listt.length) {
               this.page_num++;
               this.list = this.list.concat(response.order_listt);
-              if(response.order_listt.length < 10){
+              if (response.order_listt.length < 10) {
                 this.finished = true;
               }
             } else {
@@ -135,8 +138,17 @@ export default {
       .right {
         font-size: 16px;
         color: #ff560a;
+        &.green {
+          color: #28d300;
+        }
+        &.red {
+          color: #f71842;
+        }
       }
     }
   }
+}
+.orange {
+  color: #ff670e;
 }
 </style>

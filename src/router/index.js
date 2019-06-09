@@ -27,6 +27,16 @@ import PayState from '@/pages/PayState';
 import Orders from '@/pages/Orders';
 import OrderDetail from '@/pages/OrderDetail';
 import OrderLogistics from '@/pages/OrderLogistics';
+import JibeiRule from '@/pages/JibeiRule';
+import JibeiLog from '@/pages/JibeiLog';
+import FundIntegral from '@/pages/FundIntegral';
+import FundIntegralDetail from '@/pages/FundIntegralDetail';
+import ConversionCash from '@/pages/ConversionCash';
+import ConversionIntegral from '@/pages/ConversionIntegral';
+import WithdrawCash from '@/pages/WithdrawCash';
+import WithdrawToAlipay from '@/pages/WithdrawToAlipay';
+import WithdrawToCard from '@/pages/WithdrawToCard';
+
 
 Vue.use(Router)
 
@@ -64,6 +74,8 @@ let router = new Router({
           },
           component: User
         },
+        
+        
       ]
     },
 
@@ -255,18 +267,89 @@ let router = new Router({
       },
       component: OrderLogistics
     },
+    {
+      path: '/jibeiRule',
+      name: 'JibeiRule',
+      meta: {
+        title: '积贝解读和获取'
+      },
+      component: JibeiRule
+    },
+    {
+      path: '/jibeiLog',
+      name: 'JibeiLog',
+      meta: {
+        title: '我的积贝'
+      },
+      component: JibeiLog
+    },
+    {
+      path: '/fundIntegral',
+      name: 'FundIntegral',
+      meta: {
+        title: '基金积贝'
+      },
+      component: FundIntegral
+    },
+    {
+      path: '/fundIntegralDetail',
+      name: 'FundIntegralDetail',
+      meta: {
+        title: '我的收入'
+      },
+      component: FundIntegralDetail
+    },
+    {
+      path: '/conversionCash',
+      name: 'ConversionCash',
+      meta: {
+        title: '兑换现金'
+      },
+      component: ConversionCash
+    },
+    {
+      path: '/conversionIntegral',
+      name: 'ConversionIntegral',
+      meta: {
+        title: '兑换积贝'
+      },
+      component: ConversionIntegral
+    },
+    {
+      path: '/withdrawCash',
+      name: 'WithdrawCash',
+      meta: {
+        title: '余额提现'
+      },
+      component: WithdrawCash
+    },
+    {
+      path: '/withdrawToAlipay',
+      name: 'WithdrawToAlipay',
+      meta: {
+        title: '提现到支付宝'
+      },
+      component: WithdrawToAlipay
+    },
+    {
+      path: '/withdrawToCard',
+      name: 'WithdrawToCard',
+      meta: {
+        title: '提现到银行卡'
+      },
+      component: WithdrawToCard
+    },
   ]
 })
 
 // 导航守卫
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
 router.beforeEach((to, from, next) => {
-  if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment') {
+  if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment' || to.name === 'FindPwd') {
   next();
   } else {
   let token = localStorage.getItem('token');
   if (token == null || token == '') {
-    console.log('#############################################');
     next('/login');
   } else {
     next();

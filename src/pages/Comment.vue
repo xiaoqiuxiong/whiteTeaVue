@@ -1,7 +1,17 @@
 <template>
   <div>
     <!-- 导航 area -->
-    <van-nav-bar fixed class="navbar-area" title="评论" left-arrow @click-left="returnPrePage"/>
+     <!-- 导航栏 -->
+    <van-nav-bar
+      class="nav-area"
+      fixed
+      :title="$route.meta.title"
+      left-arrow
+      @click-left="returnPrePage"
+    >
+      <van-icon @click="$refs.menu.isShow(true)" name="weapp-nav" slot="right"/>
+    </van-nav-bar>
+    <Menu ref="menu"></Menu>
     <!-- 评论展示list area -->
     <div class="comment-show-area">
       <div class="comment-tab">
@@ -66,7 +76,11 @@
 import { ImagePreview } from "vant";
 import { apiGoodsComment } from "@/request/api";
 import crypto from "@/cryptoUtil";
+import Menu from '../components/Menu.vue';
 export default {
+  components: {
+    Menu,
+  },
   data() {
     return {
       commentTabActive: 0,

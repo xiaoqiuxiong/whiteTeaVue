@@ -76,4 +76,13 @@ export const apiConfirmOrder = params => post('/apis/confirmOrder', JSON.stringi
 export const apiWatchWuLiu = params => post('/apis/watchWuLiu', JSON.stringify(params) || {});
 //  获取票据
 export const apiGetWebAccessTicket = params => post('/apis/getWebAccessTicket', JSON.stringify(params) || {});
-
+//  积贝的使用方式
+export const apiJibeiUseWay = params => post('/apis/jibeiUseWay', JSON.stringify(params) || {});
+//  我的积贝详细
+export const apiUserJiBei = params => post('/apis/userJiBei', JSON.stringify(params) || {});
+//  我的 基金积贝 详细 (我的收入)
+export const apiUserJiJin = params => post('/apis/userJiJin', JSON.stringify(params) || {});
+//  基金积贝 兑换 现金 或 积贝
+export const apiExchangeJiJinJiBei = params => post('/apis/exchangeJiJinJiBei', JSON.stringify(params) || {});
+//  提现申请
+export const apiUserWithdraw = params => post('/apis/userWithdraw', JSON.stringify(params) || {});

@@ -11,10 +11,10 @@
     <div class="cont-area">
       <div class="cont-title">
         <div class="line"></div>
-        <span v-if="JSON.parse(this.$store.state.userInfo).user_rank == 6">超级社区规则</span>
+        <span v-if="user_rank == 6">超级社区规则</span>
         <span v-else>社区规则</span>
       </div>
-      <div v-if="JSON.parse(this.$store.state.userInfo).user_rank == 6" class="cont">
+      <div v-if="user_rank == 6" class="cont">
         一、购买奖励:
         <br>购买商品1000元、获得1000等值“积贝”赠送，获得每天5‰算力用于挖掘积贝;
         <br>购买商品5000元、获得5000等值“积贝”赠送，获得每天7‰算力用于挖掘积贝;
@@ -55,7 +55,32 @@
 </template>
 
 <script>
-export default {};
+import { apiUserIndex } from "@/request/api";
+import crypto from "@/cryptoUtil";
+import { Toast } from "vant";
+export default {
+  data() {
+    return {
+      user_rank: -1
+    };
+  },
+  created() {
+    this.initUserInfo();
+  },
+  methods: {
+    initUserInfo() {
+      apiUserIndex()
+        .then(result => {
+          if (result.code == 0) {
+            this.user_rank = result.data.user_info.user_rank;
+          }
+        })
+        .catch(err => {
+          Toast("网络故障，请刷新重试");
+        });
+    }
+  }
+};
 </script>
 
 <style lang="less" scoped>

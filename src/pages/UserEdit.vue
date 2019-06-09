@@ -13,7 +13,13 @@
       </van-uploader>
     </van-cell>
     <van-cell title="用户昵称" is-link :value="userInfo.user_name" @click="showDialog = true"></van-cell>
-    <van-cell v-if="JSON.stringify(userInfo) != '{}'" @click="show=true" title="出生日期" is-link :value="dateToString(userInfo.birthday)"></van-cell>
+    <van-cell
+      v-if="JSON.stringify(userInfo) != '{}'"
+      @click="show=true"
+      title="出生日期"
+      is-link
+      :value="dateToString(userInfo.birthday)"
+    ></van-cell>
     <van-cell
       v-show="item.value == userInfo.sex"
       v-for="(item, index) in actions"
@@ -80,7 +86,7 @@ export default {
         { name: "男", value: 1 },
         { name: "女", value: 2 },
         { name: "保密", value: 0 }
-      ],
+      ]
     };
   },
   created() {
@@ -215,7 +221,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.van-uploader__input{
+.van-uploader__input {
   position: absolute;
   top: 0;
   left: 0;

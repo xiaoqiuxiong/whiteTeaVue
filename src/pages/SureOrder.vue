@@ -220,42 +220,30 @@ export default {
     this.actionCheckOrder();
   },
   methods: {
-    onBridgeReady() {
-      WeixinJSBridge.invoke(
-        "getBrandWCPayRequest",
-        {
-          appId: this.wechatData.appId, //公众号名称，由商户传入
-          timeStamp: string(this.wechatData.timestamp), //时间戳，自1970年以来的秒数
-          nonceStr: this.wechatData.nonceStr, //随机串
-          package: this.wechatData.package,
-          signType: this.wechatData.signType, //微信签名方式：
-          paySign: this.wechatData.paySign //微信签名
-        },
-        function(res) {
-          if (res.err_msg == "get_brand_wcpay_request:ok") {
-            // 使用以上方式判断前端返回,微信团队郑重提示：
-            //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-          }
+    onBridgeReady(data) {
+      alert(JSON.stringify(data))
+      WeixinJSBridge.invoke("getBrandWCPayRequest", data, function(res) {
+        alert(JSON.stringify(res))
+        if (res.err_msg == "get_brand_wcpay_request:ok") {
+          alert('支付成功')
+          // 使用以上方式判断前端返回,微信团队郑重提示：
+          //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+        }else{
+          alert('支付失败')
         }
-      );
+      });
     },
     wexinPay() {
       if (typeof WeixinJSBridge == "undefined") {
         if (document.addEventListener) {
           document.addEventListener(
             "WeixinJSBridgeReady",
-            this.onBridgeReady(this.wechatData),
+            this.onBridgeReady,
             false
           );
         } else if (document.attachEvent) {
-          document.attachEvent(
-            "WeixinJSBridgeReady",
-            this.onBridgeReady(this.wechatData)
-          );
-          document.attachEvent(
-            "onWeixinJSBridgeReady",
-            this.onBridgeReady(this.wechatData)
-          );
+          document.attachEvent("WeixinJSBridgeReady", this.onBridgeReady);
+          document.attachEvent("onWeixinJSBridgeReady", this.onBridgeReady);
         }
       } else {
         this.onBridgeReady(this.wechatData);
@@ -388,14 +376,15 @@ export default {
           JSON.stringify({
             address_id: this.address_id,
             cart_ids: this.cart_ids,
-            order: this.order_infos
+            order: this.order_infos,
+            is_web: true
           })
         )
       })
         .then(result => {
           if (result.code == 0) {
-            return false;
             result = JSON.parse(crypto.decrypt(result.data));
+            console.log(result)
             if (this.order_infos.pay_id == 4 || this.order_infos.pay_id == 15) {
               this.$router.push({
                 name: "PayState",
@@ -426,15 +415,14 @@ export default {
                 this.$refs.form.submit();
               }, 500);
             } else if (this.order_infos.pay_id == 11) {
-              console.log(this.wechatData);
               this.wechatData = {
-                appId: result.appId,
-                nonceStr: result.nonceStr,
+                appId: result.appid,  
+                nonceStr: result.noncestr,
                 orderSn: result.order_sn,
-                paySign: result.paySign,
-                timestamp: result.timestamp,
-                signType: result.signType,
-                package: result.package
+                paySign: result.sign,
+                timeStamp: result.timestamp.toString(),
+                signType: 'MD5',
+                package: 'prepay_id=' + result.prepayid
               };
               this.wexinPay();
             }

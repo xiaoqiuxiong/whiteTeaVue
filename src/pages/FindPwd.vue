@@ -64,7 +64,7 @@ import { Toast } from "vant";
 export default {
   data() {
     return {
-      type: 0,
+      type: 1,
       active: 0,
       phone: "",
       sms: "",
@@ -101,6 +101,10 @@ export default {
 
 
 <style lang="less">
+html,body,#app{
+  height: 100%;
+  background-color: #fff;
+}
 .register {
   height: 100%;
   background-image: url("../assets/images/register_bg.png");

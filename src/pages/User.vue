@@ -4,7 +4,12 @@
     <div class="usercenter-area">
       <div class="cont" @click="$router.push({name: 'UserEdit'})">
         <div class="left">
-          <van-image v-if="userInfo.user_info" fit="cover" v-lazy :src="userInfo.user_info.headimg"/>
+          <van-image
+            v-if="userInfo.user_info"
+            fit="cover"
+            v-lazy
+            :src="userInfo.user_info.headimg"
+          />
         </div>
         <div class="right" v-if="userInfo.user_info">{{userInfo.user_info.user_name}}</div>
       </div>
@@ -21,14 +26,20 @@
               <div class="left"></div>
               <div class="right">我的账户</div>
             </div>
-            <div class="bottom" v-if="userInfo.user_info">¥{{userInfo.user_info.user_money | numberFilter}}</div>
+            <div
+              class="bottom"
+              v-if="userInfo.user_info"
+            >¥{{userInfo.user_info.user_money | moneyFilter}}</div>
           </div>
           <div class="right" @click="$router.push({name: 'MyJibei'})">
             <div class="top">
               <div class="left right-left"></div>
               <div class="right">我的积贝</div>
             </div>
-            <div class="bottom" v-if="userInfo.user_info">{{userInfo.user_info.rank_points | numberFilter}}</div>
+            <div
+              class="bottom"
+              v-if="userInfo.user_info"
+            >{{userInfo.user_info.rank_points | moneyFilter}}</div>
           </div>
         </div>
       </div>
@@ -42,26 +53,26 @@
           </router-link>
         </div>
         <div class="bottom">
-          <div class="item">
+          <router-link :to="{name: 'Orders',query: {type: 'await_pay'}}" class="item">
             <div class="item-top"></div>
             <div class="item-bpttom">待付款</div>
-          </div>
-          <div class="item">
+          </router-link>
+          <router-link :to="{name: 'Orders',query: {type: 'await_ship'}}" class="item">
             <div class="item-top"></div>
             <div class="item-bpttom">待发货</div>
-          </div>
-          <div class="item">
+          </router-link>
+          <router-link :to="{name: 'Orders',query: {type: 'await_receipt'}}" class="item">
             <div class="item-top"></div>
             <div class="item-bpttom">待收货</div>
-          </div>
-          <div class="item">
+          </router-link>
+          <router-link :to="{name: 'Orders',query: {type: 'await_comment'}}" class="item">
             <div class="item-top"></div>
             <div class="item-bpttom">待评价</div>
-          </div>
-          <div class="item">
+          </router-link>
+          <router-link :to="{name: 'Orders',query: {type: 'contract'}}" class="item">
             <div class="item-top"></div>
             <div class="item-bpttom">合约</div>
-          </div>
+          </router-link>
         </div>
       </div>
       <!-- 选项 area -->
@@ -106,22 +117,24 @@ export default {
       userInfo: {}
     };
   },
-  created () {
+  created() {
     this.initUserInfo();
   },
   methods: {
-    initUserInfo(){
-      apiUserIndex().then((result) => {
-        if(result.code == 0){
-          this.userInfo = result.data
-        }
-      }).catch((err) => {
-        Toast('网络故障，请刷新重试')
-      });
+    initUserInfo() {
+      apiUserIndex()
+        .then(result => {
+          if (result.code == 0) {
+            this.userInfo = result.data;
+          }
+        })
+        .catch(err => {
+          Toast("网络故障，请刷新重试");
+        });
     },
-    logout(){
-      this.$store.commit('setToken', '')
-      this.$router.replace({name: 'Login'})
+    logout() {
+      this.$store.commit("setToken", "");
+      this.$router.replace({ name: "Login" });
     }
   }
 };
