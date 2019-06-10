@@ -134,10 +134,6 @@
         </van-cell-group>
       </van-radio-group>
     </div>
-    <div>{{access_token}}</div>
-    <br>
-    <br>
-    <div>{{code}}</div>
     <div class="bottom-box-area"></div>
     <!-- 底部导航 area -->
     <van-submit-bar
@@ -148,19 +144,19 @@
       @submit="onSubmit"
     />
 
-    <form class="alipayForm" ref="form" action="alipay/gateway.do" method="post">
-      <input name="timestamp" v-model="alipayData.timestamp">
-      <input name="method" :value="alipayData.method">
-      <input name="app_id" v-model="alipayData.app_id">
-      <input name="sign_type" :value="alipayData.sign_type">
-      <input name="sign" v-model="alipayData.sign">
-      <input name="version" :value="alipayData.version">
-      <input name="biz_content" v-model="alipayData.biz_content">
-      <input name="format" :value="alipayData.format">
-      <input name="charset" :value="alipayData.charset">
-      <input name="notify_url" :value="alipayData.notify_url">
-      <input name="return_url" :value="alipayData.return_url">
-      <input type="submit">
+    <form class="alipayForm" id="pay_form" ref="form" action="alipay/gateway.do" method="post">
+      <input type="hidden" name="timestamp" v-model="alipayData.timestamp">
+      <input type="hidden" name="method" :value="alipayData.method">
+      <input type="hidden" name="app_id" v-model="alipayData.app_id">
+      <input type="hidden" name="sign_type" :value="alipayData.sign_type">
+      <input type="hidden" name="biz_content" v-model="alipayData.biz_content">
+      <input type="hidden" name="sign" v-model="alipayData.sign">
+      <input type="hidden" name="version" :value="alipayData.version">
+      <input type="hidden" name="format" :value="alipayData.format">
+      <input type="hidden" name="charset" :value="alipayData.charset">
+      <input type="hidden" name="notify_url" :value="alipayData.notify_url">
+      <input type="hidden" name="return_url" :value="alipayData.return_url">
+      <input type="submit" class="J-btn-submit">
     </form>
   </div>
 </template>
@@ -168,15 +164,15 @@
 <script>
 import sha1 from "js-sha1";
 import wx from "weixin-js-sdk";
-import axios from "axios";
 import {
   apiCheckOrder,
   apiSureOrder,
-  apiGetAccessToken,
+  apiGetWebAccessToken,
   apiGetWebAccessTicket
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
+import "@/assets/js/ap.js";
 
 export default {
   data() {
@@ -205,7 +201,10 @@ export default {
       code: "",
       access_token: "",
       jsapi_ticket: "",
-      open_id: ""
+      open_id: "",
+      datastr: "",
+      signatureStr: "",
+      signature: ""
     };
   },
   created() {
@@ -218,39 +217,119 @@ export default {
     this.cart_ids.push(Number(cartIdsData));
     // 检查订单
     this.actionCheckOrder();
+    if (this.isWeiXin) {
+      this.getWebAccessTicket();
+      this.getCode();
+    }
   },
   methods: {
-    onBridgeReady(data) {
-      alert(JSON.stringify(data))
-      WeixinJSBridge.invoke("getBrandWCPayRequest", data, function(res) {
-        alert(JSON.stringify(res))
-        if (res.err_msg == "get_brand_wcpay_request:ok") {
-          alert('支付成功')
-          // 使用以上方式判断前端返回,微信团队郑重提示：
-          //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-        }else{
-          alert('支付失败')
-        }
-      });
-    },
-    wexinPay() {
-      if (typeof WeixinJSBridge == "undefined") {
-        if (document.addEventListener) {
-          document.addEventListener(
-            "WeixinJSBridgeReady",
-            this.onBridgeReady,
-            false
-          );
-        } else if (document.attachEvent) {
-          document.attachEvent("WeixinJSBridgeReady", this.onBridgeReady);
-          document.attachEvent("onWeixinJSBridgeReady", this.onBridgeReady);
-        }
+    getCode() {
+      // 非静默授权，第一次有弹框
+      this.code = "";
+      let local = window.location.href; // 获取页面url
+      let appid = this.APPID;
+      this.code = this.getUrlCode().code; // 截取code
+      if (this.code == null || this.code === "") {
+        // 如果没有code，则去请求
+        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
+          local
+        )}&response_type=code&scope=snsapi_base&state=123#wechat_redirect`;
       } else {
-        this.onBridgeReady(this.wechatData);
+        // 你自己的业务逻辑
+        this.getGetWebAccessToken();
       }
     },
+    getUrlCode() {
+      // 截取url中的code方法
+      var url = location.search;
+      this.winUrl = url;
+      var theRequest = new Object();
+      if (url.indexOf("?") != -1) {
+        var str = url.substr(1);
+        var strs = str.split("&");
+        for (var i = 0; i < strs.length; i++) {
+          theRequest[strs[i].split("=")[0]] = strs[i].split("=")[1];
+        }
+      }
+      return theRequest;
+    },
+    getWebAccessTicket() {
+      apiGetWebAccessTicket({
+        data: crypto.encrypt(JSON.stringify({ code: "gongxin" }))
+      })
+        .then(result => {
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data));
+            this.jsapi_ticket = result;
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
+    getGetWebAccessToken() {
+      apiGetWebAccessToken({
+        data: crypto.encrypt(JSON.stringify({ code: this.code }))
+      })
+        .then(result => {
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data));
+            this.open_id = result.openid;
+            this.access_token = result.access_token;
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
+    wexinPay() {
+      let wechatData = this.wechatData;
+      // 签名
+      this.signatureStr =
+        "jsapi_ticket=" +
+        this.jsapi_ticket +
+        "&noncestr=" +
+        wechatData.nonceStr +
+        "&timestamp=" +
+        wechatData.timeStamp +
+        "&url=" +
+        window.location.href;
+      this.signature = sha1(this.signatureStr);
+      let signature = this.signature;
+      wx.config({
+        debug: false,
+        appId: wechatData.appId,
+        timestamp: wechatData.timeStamp,
+        nonceStr: wechatData.nonceStr,
+        signature: signature,
+        jsApiList: ["chooseWXPay"]
+      });
+      let _self = this;
+      wx.ready(function() {
+        wx.chooseWXPay({
+          timestamp: wechatData.timeStamp,
+          nonceStr: wechatData.nonceStr,
+          package: wechatData.package,
+          signType: wechatData.signType,
+          paySign: wechatData.paySign,
+          success: function(res) {
+            _self.$router.push({ name: "PayState" });
+          },
+          cancel: function(res) {
+            _self.$router.push({ name: "Orders" });
+          },
+          fail: function(res) {
+            _self.$router.push({ name: "Orders" });
+          }
+        });
+      });
+    },
     getUrlParams(search) {
-      const queryList = search.split("?")[1].split("&");
+      const queryList = search.split("&");
       let result = {};
       search &&
         queryList.map(item => {
@@ -339,7 +418,7 @@ export default {
             this.order_infos = result.data.order_infos;
             this.totalPrice = this.cart_goods_infos[0].subtotal;
           } else {
-            // this.$router.replace({ name: "Home" });
+            this.$router.replace({ name: "Home" });
           }
         })
         .catch(err => {
@@ -377,6 +456,7 @@ export default {
             address_id: this.address_id,
             cart_ids: this.cart_ids,
             order: this.order_infos,
+            open_id: this.open_id,
             is_web: true
           })
         )
@@ -384,7 +464,6 @@ export default {
         .then(result => {
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
-            console.log(result)
             if (this.order_infos.pay_id == 4 || this.order_infos.pay_id == 15) {
               this.$router.push({
                 name: "PayState",
@@ -410,20 +489,55 @@ export default {
                 return_url: alipayData.return_url,
                 sign_type: alipayData.sign_type
               };
+              if (this.isWeiXin) {
+                setTimeout(() => {
+                  var btn = document.querySelector(".J-btn-submit");
+                  btn.addEventListener(
+                    "click",
+                    function(e) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.stopImmediatePropagation();
 
-              setTimeout(() => {
-                this.$refs.form.submit();
-              }, 500);
+                      var queryParam = "";
+                      Array.prototype.slice
+                        .call(document.querySelectorAll("input[type=hidden]"))
+                        .forEach(function(ele) {
+                          queryParam +=
+                            "&" +
+                            ele.name +
+                            "=" +
+                            encodeURIComponent(ele.value);
+                        });
+                      var gotoUrl =
+                        document
+                          .querySelector("#pay_form")
+                          .getAttribute("action") +
+                        "?" +
+                        queryParam;
+                      _AP.pay(gotoUrl);
+                      return false;
+                    },
+                    false
+                  );
+                  btn.click();
+                }, 500);
+              } else {
+                setTimeout(() => {
+                  this.$refs.form.submit();
+                }, 500);
+              }
             } else if (this.order_infos.pay_id == 11) {
               this.wechatData = {
-                appId: result.appid,  
-                nonceStr: result.noncestr,
+                appId: result.appId,
+                nonceStr: result.nonceStr,
                 orderSn: result.order_sn,
-                paySign: result.sign,
+                paySign: result.paySign,
                 timeStamp: result.timestamp.toString(),
-                signType: 'MD5',
-                package: 'prepay_id=' + result.prepayid
+                signType: result.signType,
+                package: result.package
               };
+              this.datastr = JSON.stringify(this.wechatData);
               this.wexinPay();
             }
           } else {

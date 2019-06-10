@@ -22,7 +22,7 @@ let toastLoading;
 axios.interceptors.request.use(
   config => {
     toastLoading = Toast.loading({
-      // mask: true,
+      mask: true,
       message: '加载中...'
     });
     if (store.state.token) {

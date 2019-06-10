@@ -5,15 +5,15 @@
       <van-icon name="weapp-nav" slot="right"/>
     </van-nav-bar>
     <!-- 顶部状态 area -->
-    <div class="status-area">{{status}}</div>
+    <div class="status-area">支付成功</div>
     <!-- 装饰 area -->
     <div class="line-area"></div>
     <!-- 内容 area -->
-    <div class="cont-area">
+    <!-- <div class="cont-area">
       <div>订单编号：{{order_sn}}</div>
       <div v-if="alipay">
         支付宝支付：
-        <span>¥{{alipay | moneyFilter}}</span>
+        <span>¥{{info.total_amount}}</span>
       </div>
       <div v-if="wechat">
         微信支付：
@@ -27,12 +27,11 @@
         余额支付：
         <span>¥{{balance | moneyFilter}}</span>
       </div>
-    </div>
-    <div>{{token}}</div>
+    </div> -->
     <!-- 按钮 area -->
     <div class="btn-area">
-      <van-button type="primary" round>回到首页</van-button>
-      <van-button round>查看订单</van-button>
+      <van-button type="primary" round @click="$router.push({name: 'Home'})">回到首页</van-button>
+      <van-button round @click="$router.push({name: 'Orders'})">查看订单</van-button>
     </div>
   </div>
 </template>
@@ -49,18 +48,23 @@ export default {
     return {
       order_sn: "",
       status: "",
-      coins: 0,
-      balance: 0,
-      wechat: 0,
-      alipay: 0,
-      token: ""
+      coins: false,
+      balance: false,
+      wechat: false,
+      alipay: true,
+      token: "",
+      info: {}
     };
   },
   created() {
-   
+    
+    if (this.$route.query.indexOf("alipay") != -1) {
+      this.alipay = true;
+    }
     if (!this.$route.query.order_sn || !this.$route.query.status) {
       // this.$router.push({ name: "Home" });
     }
+    this.info = this.getUrlParams(location.search)
     this.order_sn = this.$route.query.order_sn;
     this.status = this.$route.query.status;
     this.coins = this.$route.query.coins || 0;
@@ -70,7 +74,7 @@ export default {
   },
   methods: {
     getUrlParams(search) {
-      const queryList = search.split("?")[1].split("&");
+      const queryList = search.split("&");
       let result = {};
       search &&
         queryList.map(item => {
@@ -84,11 +88,6 @@ export default {
           }
         });
       return result;
-    }
-  },
-  computed: {
-    wechatData() {
-      return this.$store.state.wechatData;
     }
   }
 };

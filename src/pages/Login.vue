@@ -173,7 +173,7 @@ export default {
 </script>
 
 
-<style lang="less">
+<style lang="less" scope>
 html,
 body,
 #app {

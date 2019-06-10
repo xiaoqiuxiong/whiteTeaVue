@@ -8,6 +8,7 @@ exports.install = function (Vue, options) {
     active: require('@/assets/images/radio_active.png')
   }
   Vue.prototype.ERRORNETWORK = '网络故障，请刷新重试'
+  Vue.prototype.APPID = 'wx0e598afa34c6496d'
   Vue.prototype.isWeiXin = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1
   Vue.prototype.returnPrePage = function () {
     window.history.go(-1);

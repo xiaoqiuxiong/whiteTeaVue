@@ -16,12 +16,11 @@
       <span v-if="userInfo.user_info">{{userInfo.user_info.rank_points | moneyFilter}}</span>
     </div>
     <!-- doList-area -->
-    <div class="doList-area">
-      <div @click="study_fn" class="item"></div>
-      <router-link :to="{name: 'ConversionCash'}" class="item"></router-link>
-      <router-link :to="{name: 'ConversionIntegral'}" class="item"></router-link>
-      <router-link :to="{name: 'ConversionCash'}" class="item"></router-link>
-      <router-link :to="{name: 'ConversionIntegral'}" class="item"></router-link>
+    <div class="doList-area" v-if="userInfo.user_info">
+      <div @click="study_fn" class="item item0"></div>
+      <router-link v-if="userInfo.user_info.is_hehuo != 1" :to="{name: 'ConversionCash'}" class="item item1"></router-link>
+      <router-link v-if="userInfo.user_info.is_hehuo == 1" :to="{name: 'ConversionCash'}" class="item item2"></router-link>
+      <router-link :to="{name: 'ConversionIntegral'}" class="item item3"></router-link>
     </div>
   </div>
 </template>
@@ -79,20 +78,17 @@ export default {
     &:first-child {
       margin-right: 160px;
     }
-    &:nth-child(1) {
+    &.item0{
       background-image: url(../assets/images/fundIntegral01.png);
     }
-    &:nth-child(2) {
+    &.item1 {
       background-image: url(../assets/images/fundIntegral02.png);
     }
-    &:nth-child(3) {
+    &.item3 {
       background-image: url(../assets/images/fundIntegral03.png);
     }
-    &:nth-child(4) {
+    &.item2 {
       background-image: url(../assets/images/fundIntegral04.png);
-    }
-    &:nth-child(5) {
-      background-image: url(../assets/images/fundIntegral05.png);
     }
   }
 }

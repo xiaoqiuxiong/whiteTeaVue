@@ -93,7 +93,7 @@
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">邀请好友</div>
           </div>
-          <div class="item">
+          <div class="item" style="opacity:0">
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">绑定好友</div>
           </div>

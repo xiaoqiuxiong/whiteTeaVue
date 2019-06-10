@@ -36,6 +36,7 @@ import ConversionIntegral from '@/pages/ConversionIntegral';
 import WithdrawCash from '@/pages/WithdrawCash';
 import WithdrawToAlipay from '@/pages/WithdrawToAlipay';
 import WithdrawToCard from '@/pages/WithdrawToCard';
+import Pay from '@/pages/Pay';
 
 
 Vue.use(Router)
@@ -339,6 +340,14 @@ let router = new Router({
       },
       component: WithdrawToCard
     },
+    {
+      path: '/pay',
+      name: 'Pay',
+      meta: {
+        title: '支付提示'
+      },
+      component: Pay
+    },
   ]
 })
 
@@ -350,7 +359,8 @@ router.beforeEach((to, from, next) => {
   } else {
   let token = localStorage.getItem('token');
   if (token == null || token == '') {
-    next('/login');
+    // next('/login');
+    next();
   } else {
     next();
   }
