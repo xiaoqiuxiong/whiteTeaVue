@@ -37,6 +37,12 @@ import WithdrawCash from '@/pages/WithdrawCash';
 import WithdrawToAlipay from '@/pages/WithdrawToAlipay';
 import WithdrawToCard from '@/pages/WithdrawToCard';
 import Pay from '@/pages/Pay';
+import RegisterRule from '@/pages/RegisterRule';
+import SearchCode from '@/pages/SearchCode';
+import SearchList from '@/pages/SearchList';
+import InviteFriends from '@/pages/InviteFriends';
+import BindFriends from '@/pages/BindFriends';
+import ExchangeGoods from '@/pages/ExchangeGoods';
 
 
 Vue.use(Router)
@@ -75,8 +81,8 @@ let router = new Router({
           },
           component: User
         },
-        
-        
+
+
       ]
     },
 
@@ -348,22 +354,70 @@ let router = new Router({
       },
       component: Pay
     },
+    {
+      path: '/registerRule',
+      name: 'RegisterRule',
+      meta: {
+        title: '注册协议'
+      },
+      component: RegisterRule
+    },
+    {
+      path: '/searchCode',
+      name: 'SearchCode',
+      meta: {
+        title: '搜索'
+      },
+      component: SearchCode
+    },
+    {
+      path: '/searchList',
+      name: 'SearchList',
+      meta: {
+        title: '搜索'
+      },
+      component: SearchList
+    },
+    {
+      path: '/inviteFriends',
+      name: 'InviteFriends',
+      meta: {
+        title: '邀请好友'
+      },
+      component: InviteFriends
+    },
+    {
+      path: '/bindFriends',
+      name: 'BindFriends',
+      meta: {
+        title: '绑定好友'
+      },
+      component: BindFriends
+    },
+    {
+      path: '/exchangeGoods',
+      name: 'ExchangeGoods',
+      meta: {
+        title: '商品详情'
+      },
+      component: ExchangeGoods
+    },
+    
   ]
 })
 
 // 导航守卫
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
 router.beforeEach((to, from, next) => {
-  if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment' || to.name === 'FindPwd') {
-  next();
-  } else {
-  let token = localStorage.getItem('token');
-  if (token == null || token == '') {
-    // next('/login');
+  if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment' || to.name === 'FindPwd'|| to.name === 'SearchCode'|| to.name === 'SearchList') {
     next();
   } else {
-    next();
-  }
+    let token = localStorage.getItem('token');
+    if (token == null || token == '') {
+      next('/login');
+    } else {
+      next();
+    }
   }
 });
 

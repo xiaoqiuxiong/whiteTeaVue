@@ -91,6 +91,7 @@
 </template>
 
 <script>
+import md5 from "js-md5";
 import { apiCheckRegister, apiSendCode, apiRegister } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
@@ -239,7 +240,7 @@ export default {
             verificationCode: this.sms,
             regis_type: "mobile",
             user: {
-              password: this.password,
+              password: md5(this.password),
               phone: this.phone,
               username: ""
             }
@@ -303,6 +304,7 @@ export default {
       }
     },
     showUserAgreementFn(e) {
+      this.$router.push({name: 'RegisterRule'})
       // 阻止事件冒泡
       e.stopPropagation();
     }
@@ -312,9 +314,6 @@ export default {
 
 
 <style lang="less" scope>
-html,body,#app{
-  height: 100%;
-}
 .register {
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
@@ -358,16 +357,7 @@ html,body,#app{
       border-color: #fff;
     }
   }
-  .van-checkbox__icon img {
-    width: 12px;
-    height: 12px;
-    display: inline-block;
-  }
   .user-agreement {
-    .van-checkbox {
-      display: flex;
-      align-items: center;
-    }
     &:after {
       border-width: 0 !important;
     }

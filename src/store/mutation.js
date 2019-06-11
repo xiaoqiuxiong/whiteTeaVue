@@ -29,5 +29,9 @@ export default {
   setWechatData(state,wechatData) {
     state.wechatData = wechatData
     localStorage.wechatData = JSON.stringify(state.wechatData)
+  },
+  setSearchHistory(state,searchHistory) {
+    state.searchHistory = searchHistory
+    localStorage.searchHistory = JSON.stringify(state.searchHistory)
   }
 }

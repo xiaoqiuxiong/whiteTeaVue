@@ -89,7 +89,7 @@
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">我的银行卡</div>
           </router-link>
-          <div class="item">
+          <div class="item" @click="$router.push({name: 'InviteFriends'})">
             <div class="item-top option3-item-top"></div>
             <div class="item-bpttom">邀请好友</div>
           </div>

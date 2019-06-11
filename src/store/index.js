@@ -11,6 +11,7 @@ export default new vuex.Store({
     allAddress: localStorage.getItem('allAddress') ? JSON.parse(localStorage.getItem('allAddress')) : [],
     editAddress: localStorage.getItem('editAddress') ? JSON.parse(localStorage.getItem('editAddress')) : {},
     wechatData: localStorage.getItem('wechatData') ? JSON.parse(localStorage.getItem('wechatData')) : {},
+    searchHistory: localStorage.getItem('searchHistory') ? JSON.parse(localStorage.getItem('searchHistory')) : [],
   },
   mutations: mutation
 })

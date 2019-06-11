@@ -23,67 +23,61 @@
     <div class="van-hairline--bottom"></div>
     <!-- 订单 area -->
     <div class="income-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <router-link
+          :to="{name: 'OrderDetail',query:{order_id:item.order_id}}"
+          class="item"
+          v-for="(item, index) in list"
+          :key="index"
         >
-          <router-link
-            :to="{name: 'OrderDetail',query:{order_id:item.order_id}}"
-            class="item"
-            v-for="(item, index) in list"
-            :key="index"
+          <div class="item-title">
+            商品将由平台为您打包寄出
+            <span v-if="item.order_final_status==1">待付款</span>
+            <span v-if="item.order_final_status==2">待发货</span>
+            <span v-if="item.order_final_status==3">待收货</span>
+            <span v-if="item.order_final_status==4">待评论</span>
+            <span v-if="item.order_final_status==5">合约中</span>
+          </div>
+          <van-card
+            class="item-card"
+            :lazy-load="true"
+            v-if="item.goods_info.attr_infos"
+            :num="item.goods_info.attr_infos[0].goods_number"
+            :price="item.goods_info.attr_infos[0].goods_price | moneyFilter"
+            :desc="item.goods_info.attr_infos[0].attr_value"
+            :title="item.goods_info.attr_infos[0].goods_name"
+            :thumb="item.goods_info.attr_infos[0].goods_thumb"
           >
-            <div class="item-title">
-              商品将由平台为您打包寄出
-              <span v-if="item.order_final_status==1">待付款</span>
-              <span v-if="item.order_final_status==2">待发货</span>
-              <span v-if="item.order_final_status==3">待收货</span>
-              <span v-if="item.order_final_status==4">待评论</span>
-              <span v-if="item.order_final_status==5">合约中</span>
-            </div>
-            <van-card
-              class="item-card"
-              :lazy-load="true"
-              v-if="item.goods_info.attr_infos"
-              :num="item.goods_info.attr_infos[0].goods_number"
-              :price="item.goods_info.attr_infos[0].goods_price | moneyFilter"
-              :desc="item.goods_info.attr_infos[0].attr_value"
-              :title="item.goods_info.attr_infos[0].goods_name"
-              :thumb="item.goods_info.attr_infos[0].goods_thumb"
-            >
-              <div slot="footer">
-                <div v-if="item.order_final_status==1">
-                  <van-button round class="btn" @click.prevent="del(item.order_id)">取消订单</van-button>
-                  <van-button round class="btn primary">立即付款</van-button>
-                  <van-button round class="btn primary">查看订单</van-button>
-                </div>
-                <div v-if="item.order_final_status==2">
-                  <van-button round class="btn primary">查看订单</van-button>
-                </div>
-                <div v-if="item.order_final_status==3">
-                  <van-button round class="btn" @click.prevent="orderLogistics(item.order_id)">查看物流</van-button>
-                  <van-button
-                    round
-                    class="btn primary"
-                    @click.prevent="takeGoods(item.order_id)"
-                  >确认收货</van-button>
-                  <van-button round class="btn primary">查看订单</van-button>
-                </div>
-                <div v-if="item.order_final_status==5">
-                  <van-button round class="btn primary">查看订单</van-button>
-                </div>
-                <div v-if="item.order_final_status==4">
-                  <van-button round class="btn primary">立即评价</van-button>
-                </div>
+            <div slot="footer">
+              <div v-if="item.order_final_status==1">
+                <van-button round class="btn">取消订单</van-button>
+                <van-button round class="btn primary">立即付款</van-button>
+                <van-button round class="btn primary">查看订单</van-button>
               </div>
-            </van-card>
-          </router-link>
-        </van-list>
-      </van-pull-refresh>
+              <div v-if="item.order_final_status==2">
+                <van-button round class="btn primary">查看订单</van-button>
+              </div>
+              <div v-if="item.order_final_status==3">
+                <van-button round class="btn">查看物流</van-button>
+                <van-button round class="btn primary">确认收货</van-button>
+                <van-button round class="btn primary">查看订单</van-button>
+              </div>
+              <div v-if="item.order_final_status==5">
+                <van-button round class="btn primary">查看订单</van-button>
+              </div>
+              <div v-if="item.order_final_status==4">
+                <van-button round class="btn primary">立即评价</van-button>
+              </div>
+            </div>
+          </van-card>
+        </router-link>
+      </van-list>
     </div>
     <back-top></back-top>
   </div>
@@ -137,12 +131,10 @@ export default {
       list: [],
       loading: false,
       finished: false,
-      isRefresh: false,
       page_num: 0,
       total: 1,
       level_1: 1,
       level_2: 0,
-      timer1: null,
       timer2: null,
       type: ""
     };
@@ -232,7 +224,7 @@ export default {
             });
         })
         .catch(() => {
-          // on cancel
+          Toast(this.ERRORNETWORK);
         });
     },
     changeTab(req_type) {
@@ -242,26 +234,11 @@ export default {
           this.type = e.val;
         }
       });
-      this.isRefresh = false;
       this.finished = false;
       this.list = [];
       this.page_num = 0;
-      this.timer1 = null;
       this.timer2 = null;
       this.onLoad();
-    },
-    onRefresh() {
-      if (!this.timer1) {
-        this.timer1 = setTimeout(() => {
-          this.isRefresh = false;
-          this.finished = false;
-          this.list = [];
-          this.page_num = 0;
-          this.timer1 = null;
-          this.timer2 = null;
-          this.onLoad();
-        }, 500);
-      }
     },
     onLoad() {
       this.loading = true;
@@ -297,13 +274,11 @@ export default {
             this.finished = true;
           }
           this.loading = false;
-          this.timer1 = null;
           this.timer2 = null;
         })
         .catch(error => {
-          console.log(error);
+          Toast(this.ERRORNETWORK);
           this.loading = false;
-          this.timer1 = null;
           this.timer2 = null;
         });
     }

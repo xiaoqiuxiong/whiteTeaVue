@@ -1,7 +1,12 @@
 <template>
   <div class="register">
     <!-- 导航栏 -->
-    <van-nav-bar class="nav-area" :title="$route.meta.title" left-arrow @click-left="returnPrePage"/>
+    <van-nav-bar
+      class="nav-area"
+      :title="$route.meta.title"
+      left-arrow
+      @click-left="returnPrePage"
+    />
     <!-- 手机验证码表单 -->
     <div v-if="type == 0" class="form">
       <van-row type="flex" justify="center">
@@ -10,7 +15,14 @@
             <van-field v-model="phone" clearable label="手机号码" placeholder="请输入手机号码"/>
             <van-cell-group>
               <van-field v-model="sms" center clearable label="手机验证码" placeholder="请输入手机验证码">
-                <van-button slot="button" size="small" type="primary" round>获取验证码</van-button>
+                <van-button
+                  slot="button"
+                  @click="getCode"
+                  :disabled="!isSms"
+                  size="small"
+                  type="primary"
+                  round
+                >{{smsBtnTxt}}</van-button>
               </van-field>
             </van-cell-group>
             <!-- 下边框 -->
@@ -18,7 +30,7 @@
               <div class="van-hairline--bottom"></div>
             </div>
             <div class="van-cell register-btn">
-              <van-button round block type="primary">下一步</van-button>
+              <van-button round block type="primary" @click="verifyCode">下一步</van-button>
             </div>
           </van-cell-group>
         </van-col>
@@ -35,11 +47,11 @@
               label="登录密码"
               placeholder="请输入登陆密码(6-20个字符)"
               :right-icon="passwordEye"
-              @click-right-icon="passwordEyeFn" 
+              @click-right-icon="passwordEyeFn"
             />
             <van-field
               v-model="resPassword"
-              type="password"
+              :type="resPasswordEyeType"
               label="确认密码"
               placeholder="请再次输入密码"
               :right-icon="resPasswordEye"
@@ -50,7 +62,7 @@
               <div class="van-hairline--bottom"></div>
             </div>
             <div class="van-cell register-btn">
-              <van-button round block type="primary">找回密码</van-button>
+              <van-button round block type="primary" @click="changePwd">找回密码</van-button>
             </div>
           </van-cell-group>
         </van-col>
@@ -60,11 +72,18 @@
 </template>
 
 <script>
+import md5 from "js-md5";
+import {
+  apiSendCode,
+  apiFindBackPwByPhone1,
+  apiFindBackPwByPhone2
+} from "@/request/api";
+import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
   data() {
     return {
-      type: 1,
+      type: 0,
       active: 0,
       phone: "",
       sms: "",
@@ -74,9 +93,119 @@ export default {
       resPassword: "",
       resPasswordEye: "closed-eye",
       resPasswordEyeType: "password",
+      isSms: true,
+      smsBtnTxt: "获取验证码",
+      seconds: 60,
+      token: ""
     };
   },
   methods: {
+    getCode() {
+      // 判断手机号
+      if (this.phone.length == 0) {
+        Toast("请输入手机号码");
+        return false;
+      } else if (this.phone.length != 11) {
+        Toast("请输入正确的手机号码");
+        return false;
+      }
+      apiSendCode({
+        data: crypto.encrypt(
+          JSON.stringify({
+            phone: this.phone,
+            type: 1002,
+            tag: "gongxin"
+          })
+        )
+      })
+        .then(result => {
+          if (result.code == 0) {
+            Toast("手机验证码已经发送，请注意查收");
+            this.isSms = false;
+            let timer;
+            timer = window.setInterval(() => {
+              this.smsBtnTxt = this.seconds + "秒";
+              this.seconds--;
+              if (this.seconds < 1) {
+                window.clearInterval(timer);
+                this.smsBtnTxt = "获取验证码";
+                this.seconds = 60;
+                this.isSms = true;
+              }
+            }, 1000);
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
+    verifyCode() {
+      apiFindBackPwByPhone1({
+        data: crypto.encrypt(
+          JSON.stringify({
+            type: "mobile",
+            phone: this.phone,
+            code: this.sms
+          })
+        )
+      })
+        .then(result => {
+          if (result.code == 0) {
+            this.type = 1;
+            this.token = result.data;
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
+    changePwd() {
+      // 判断数据
+      // 密码
+      if (this.password.length == "") {
+        Toast("请输入登录密码")
+        return false
+      } else if (this.password.length < 6 || this.password.length > 20) {
+        Toast("登录密码不能少于 6位/密码不能超过20位")
+        return false
+      }
+      // 重复密码
+      if (this.resPassword.length == "") {
+        Toast("请重复输入登录密码")
+        return false
+      } else if (this.password !== this.resPassword) {
+        Toast("两次输入登录密码不一致")
+        return false
+      }
+      apiFindBackPwByPhone2({
+        data: crypto.encrypt(
+          JSON.stringify({
+            type: "mobile",
+            phone: this.phone,
+            passwords: {
+              token: this.token,
+              new_password1: md5(this.password),
+              new_password2: md5(this.resPassword)
+            }
+          })
+        )
+      })
+        .then(result => {
+          if (result.code == 0) {
+            Toast("密码修改成功！");
+            this.$router.replace({ name: "Login" });
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
     passwordEyeFn() {
       if (this.passwordEye == "closed-eye") {
         this.passwordEye = "eye-o";
@@ -94,25 +223,27 @@ export default {
         this.resPasswordEye = "closed-eye";
         this.resPasswordEyeType = "password";
       }
-    },
+    }
   }
 };
 </script>
 
 
 <style lang="less">
-html,body,#app{
+html,
+body,
+#app {
   height: 100%;
-  background-color: #fff;
 }
 .register {
+  background-color: #fff;
   height: 100%;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;
-  .register-btn{
-    button{
+  .register-btn {
+    button {
       margin-top: 40px;
     }
   }
@@ -133,8 +264,6 @@ html,body,#app{
     }
     .van-cell-group {
       margin-top: 10px;
-      .van-cell {
-      }
     }
     .van-hairline--top-bottom::after {
       border-color: #fff;

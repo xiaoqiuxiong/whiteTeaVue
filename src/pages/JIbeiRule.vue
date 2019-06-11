@@ -63,7 +63,7 @@
               <div class="bottom">推荐好友购买商品，可获得积贝</div>
             </div>
           </div>
-          <van-button round class="btn primary">立即邀请</van-button>
+          <van-button round class="btn primary" @click="$router.push({name: 'InviteFriends'})">立即邀请</van-button>
         </div>
       </div>
     </div>

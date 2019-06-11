@@ -90,3 +90,24 @@ export const apiGetWebAccessTicket = params => post('/apis/getWebAccessTicket', 
 export const apiGetWebAccessToken = params => post('/apis/getWebAccessToken', JSON.stringify(params) || {});
 //  直接付款
 export const apiDoPay = params => post('/apis/doPay', JSON.stringify(params) || {});
+//  根据手机号找回密码1
+export const apiFindBackPwByPhone1 = params => post('/apis/findBackPwByPhone1', JSON.stringify(params) || {});
+//  根据手机号找回密码2
+export const apiFindBackPwByPhone2 = params => post('/apis/findBackPwByPhone2', JSON.stringify(params) || {});
+//  获取热门搜索 
+export const apiGetHotGoods = params => post('/apis/getHotGoods', JSON.stringify(params) || {});
+//  搜索商品
+export const apiSearchGoods = params => post('/apis/searchGoods', JSON.stringify(params) || {});
+//  获取对冲规则文字
+export const apiGetDuiChongRule = params => post('/apis/getDuiChongRule', JSON.stringify(params) || {});
+//  获取生成邀请二维码的信息
+export const apiGetInviteUserInfo = params => post('/apis/getInviteUserInfo', JSON.stringify(params) || {});
+//  获取对冲类型的邀请二维码的信息
+export const apiGetUserDuiChongInfo = params => post('/apis/getUserDuiChongInfo', JSON.stringify(params) || {});
+//  扫码后绑定用户
+export const apiBindUser = params => post('/apis/bindUser', JSON.stringify(params) || {});
+//  立即兑换
+export const apiExchangeGoods = params => post('/apis/exchangeGoods', JSON.stringify(params) || {});
+//  微信登录
+export const apiWxLogin = params => post('/apis/wxLogin', JSON.stringify(params) || {});
+

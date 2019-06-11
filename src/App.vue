@@ -8,19 +8,14 @@
 import { apiAllAddress } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
+import allAddressJson from "@/assets/js/allAddress.json";
 export default {
   name: "App",
   mounted() {
     document.title = this.$route.meta.title;
   },
   created() {
-      // apiAllAddress()
-      //   .then(result => {
-      //     if (result.code == 0) {
-      //       this.$store.commit("setAllAddress", JSON.stringify(result.data));
-      //     }
-      //   })
-      //   .catch(err => {});
+    this.$store.commit("setAllAddress", JSON.stringify(allAddressJson.data));
   },
   watch: {
     $route(to, from) {
@@ -31,7 +26,12 @@ export default {
 </script>
 
 <style lang="less">
-.nav-bar-static-height{
+.qrcode-img{
+  img{
+    width: 134px;
+  }
+}
+.nav-bar-static-height {
   height: 46px;
 }
 .van-cell--clickable:active {

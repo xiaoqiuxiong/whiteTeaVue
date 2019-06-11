@@ -54,7 +54,7 @@
         <div class="line"></div>
       </div>
       <div class="bottom">
-        <div class="item" v-if="isWeiXin"></div>
+        <div @click="wxLogin" class="item" v-if="isWeiXin"></div>
       </div>
     </div>
   </div>
@@ -62,7 +62,7 @@
 
 <script>
 import md5 from "js-md5";
-import { apiLogin } from "@/request/api";
+import { apiLogin, apiWxLogin, apiGetWebAccessToken } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
@@ -74,7 +74,8 @@ export default {
       password: "",
       passwordError: "",
       passwordEye: "closed-eye",
-      passwordEyeType: "password"
+      passwordEyeType: "password",
+      code: ""
     };
   },
   created() {
@@ -82,8 +83,68 @@ export default {
     if (this.$store.state.token) {
       this.$router.push({ name: "Home" });
     }
+    this.code = this.getUrlCode().code;
+    alert(location.search)
+    if (this.code != null || this.code !== "") {
+      // this.getGetWebAccessToken();
+    }
   },
   methods: {
+    wxLogin() {
+      if (this.code == null || this.code === "") {
+        let local = window.location.href; // 获取页面url
+        // 如果没有code，则去请求
+        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
+          local
+        )}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`;
+      }
+    },
+    getUrlCode() {
+      // 截取url中的code方法
+      var url = location.search;
+      this.winUrl = url;
+      var theRequest = new Object();
+      if (url.indexOf("?") != -1) {
+        var str = url.substr(1);
+        var strs = str.split("&");
+        for (var i = 0; i < strs.length; i++) {
+          theRequest[strs[i].split("=")[0]] = strs[i].split("=")[1];
+        }
+      }
+      return theRequest;
+    },
+    getCode() {
+      // 非静默授权，第一次有弹框
+      this.code = "";
+      let local = window.location.href; // 获取页面url
+      this.code = this.getUrlCode().code; // 截取code
+      if (this.code == null || this.code === "") {
+        // 如果没有code，则去请求
+        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
+          local
+        )}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`;
+      } else {
+        // 你自己的业务逻辑
+        this.getGetWebAccessToken();
+      }
+    },
+    getGetWebAccessToken() {
+      apiGetWebAccessToken({
+        data: crypto.encrypt(JSON.stringify({ code: this.code }))
+      })
+        .then(result => {
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data));
+            this.open_id = result.openid;
+            this.access_token = result.access_token;
+          } else {
+            Toast(result.msg);
+          }
+        })
+        .catch(err => {
+          Toast(this.ERRORNETWORK);
+        });
+    },
     // 登录数据判断
     actionLogin() {
       // 数据判断
@@ -235,12 +296,6 @@ body,
     .register-btn:after {
       border-width: 0 !important;
     }
-  }
-  .van-checkbox__icon img {
-    width: 12px;
-    height: 12px;
-    margin-top: 5px;
-    display: inline-block;
   }
   .user-agreement {
     &:after {

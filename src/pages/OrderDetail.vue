@@ -8,15 +8,26 @@
       left-arrow
       @click-left="returnPrePage"
     >
-      <van-icon name="weapp-nav" slot="right"/>
+      <van-icon @click="$refs.menu.isShow(true)" name="weapp-nav" slot="right"/>
     </van-nav-bar>
+    <Menu ref="menu"></Menu>
     <!-- 订单状态 area -->
     <div class="status-area">
       <!-- <div class="left"></div> -->
       <div class="right">{{orderInfo.order.combine.order_status_desc}}</div>
     </div>
     <!-- 地址栏 area -->
-    <router-link :to="{name: 'Address'}" class="address-area">
+    <div class="address-area">
+      <div class="left">
+        <div
+          class="top"
+        >{{orderInfo.order.order_info.consignee}}&nbsp;&nbsp;&nbsp;{{orderInfo.order.order_info.mobile}}</div>
+        <div
+          class="bottom"
+        >{{orderInfo.address.province}} {{orderInfo.address.city}} {{orderInfo.address.dist}} {{orderInfo.order.order_info.address}}</div>
+      </div>
+    </div>
+    <!-- <router-link :to="{name: 'Address'}" class="address-area">
       <div class="left">
         <div
           class="top"
@@ -28,7 +39,7 @@
       <div class="right">
         <van-icon name="arrow" size="18"/>
       </div>
-    </router-link>
+    </router-link> -->
     <!-- 装饰线 area -->
     <div class="line-area"></div>
     <!-- 商品 area -->
@@ -93,7 +104,11 @@
           <div class="left">订单编号：</div>
           <div class="center">{{orderInfo.order.order_info.order_sn}}</div>
         </div>
-        <div class="item-right">复制</div>
+        <div
+          class="item-right tag-read"
+          :data-clipboard-text="orderInfo.order.order_info.order_sn"
+          @click="copy"
+        >复制</div>
       </div>
       <div class="item">
         <div class="item-left">
@@ -149,7 +164,7 @@
       >再来一单</van-button>
     </div>
     <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 5">
-      <van-button class="primary-btn" size="small" round plain>立即评价</van-button>
+      <van-button class="primary-btn" size="small" round plain @click="commentfn">立即评价</van-button>
     </div>
     <form class="alipayForm" id="pay_form" ref="form" action="alipay/gateway.do" method="post">
       <input type="hidden" name="timestamp" v-model="alipayData.timestamp">
@@ -169,6 +184,7 @@
 </template>
 <!-- 按钮 -->
 <script>
+import Menu from "../components/Menu.vue";
 import sha1 from "js-sha1";
 import wx from "weixin-js-sdk";
 import "@/assets/js/ap.js";
@@ -182,7 +198,11 @@ import {
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast, Dialog } from "vant";
+import Clipboard from "clipboard";
 export default {
+  components: {
+    Menu
+  },
   data() {
     return {
       orderInfo: {},
@@ -217,6 +237,23 @@ export default {
     }
   },
   methods: {
+    commentfn(){
+      Toast('评论功能正在开发中')
+    },
+    copy() {
+      let clipboard = new Clipboard(".tag-read");
+      clipboard.on("success", e => {
+        Toast("复制成功");
+        // 释放内存
+        clipboard.destroy();
+      });
+      clipboard.on("error", e => {
+        // 不支持复制
+        Toast("该浏览器不支持自动复制");
+        // 释放内存
+        clipboard.destroy();
+      });
+    },
     wxConfig() {
       return new Promise((resolve, reject) => {
         this.getWebAccessTicket();

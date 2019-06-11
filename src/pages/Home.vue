@@ -3,12 +3,21 @@
     <div class="top-area">
       <!-- 顶部搜索框area -->
       <div class="search-area">
-        <van-search shape="round" placeholder="福鼎白茶&酵素"></van-search>
+        <van-search
+          @click="$router.push({name: 'SearchCode'})"
+          shape="round"
+          disabled
+          placeholder="福鼎白茶&酵素"
+        ></van-search>
       </div>
       <!-- 轮播area -->
       <div class="swipe-area home-swipe-area">
         <van-swipe :autoplay="3000">
-          <van-swipe-item @click="skipSwipeFn(item.url)" v-for="(item, index) in banners" :key="index">
+          <van-swipe-item
+            @click="skipSwipeFn"
+            v-for="(item, index) in banners"
+            :key="index"
+          >
             <img v-lazy="item.image">
           </van-swipe-item>
         </van-swipe>
@@ -25,7 +34,12 @@
     </div>
     <!-- 产品列表 -->
     <div class="goods-list-area">
-      <div v-for="(item, index) in goods" :key="index" class="goods-item" @click="skipGoods(item.goods_list[0].goods_id)">
+      <div
+        v-for="(item, index) in goods"
+        :key="index"
+        class="goods-item"
+        @click="skipGoods(item.goods_list[0].goods_id)"
+      >
         <div class="top">
           <img :src="item.goods_list[0].mobile_img" alt>
         </div>
@@ -68,28 +82,28 @@ export default {
         }
       ],
       goods: [],
-      page_num: 10  // 页码
+      page_num: 10 // 页码
     };
   },
   created() {
-    apiHome({page_num: 10}).then(res => {
-      this.banners = res.data.banner
-      this.goods = res.data.goods
+    apiHome({ page_num: 10 }).then(res => {
+      this.banners = res.data.banner;
+      this.goods = res.data.goods;
     });
   },
   methods: {
-    skipGoods(id){
+    skipGoods(id) {
       this.$router.push({
-        name: 'Goods',
-        query:{
+        name: "Goods",
+        query: {
           goods_id: id
         }
-      })
+      });
     },
     skipSwipeFn(url) {
-      // this.$router.push(url)
+      this.$router.replace({ name: "Home" });
     }
-  },
+  }
 };
 </script>
 

@@ -37,10 +37,22 @@
           @load="onLoad"
         >
           <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="img-box">
+            <div
+              @click="$router.push({name: 'ExchangeGoods',query: {goods_id: item.id}})"
+              v-if="item.can_use"
+              class="img-box"
+            >
               <van-image lazy-load fill="cover" :src="item.img_url"/>
             </div>
-            <div class="title van-ellipsis">{{item.title}}</div>
+            <div
+              @click="$router.push({name: 'ExchangeGoods',query: {goods_id: item.id}})"
+              v-if="item.can_use"
+              class="title van-ellipsis"
+            >{{item.title}}</div>
+            <div v-if="!item.can_use" class="img-box">
+              <van-image lazy-load fill="cover" :src="item.img_url"/>
+            </div>
+            <div v-if="!item.can_use" class="title van-ellipsis">{{item.title}}</div>
           </div>
         </van-list>
       </van-pull-refresh>

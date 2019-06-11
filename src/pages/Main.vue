@@ -61,7 +61,7 @@ export default {
 </script>
 
 <style scoped>
-.main-div{
+.main-div {
   padding-bottom: 1.33333rem;
 }
 </style>
