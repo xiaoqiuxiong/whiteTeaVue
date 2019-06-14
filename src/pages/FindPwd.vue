@@ -103,10 +103,10 @@ export default {
     getCode() {
       // 判断手机号
       if (this.phone.length == 0) {
-        Toast("请输入手机号码");
+        Toast(this.APPNAME+"请输入手机号码");
         return false;
       } else if (this.phone.length != 11) {
-        Toast("请输入正确的手机号码");
+        Toast(this.APPNAME+"请输入正确的手机号码");
         return false;
       }
       apiSendCode({
@@ -120,7 +120,7 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast("手机验证码已经发送，请注意查收");
+            Toast(this.APPNAME+"手机验证码已经发送，请注意查收");
             this.isSms = false;
             let timer;
             timer = window.setInterval(() => {
@@ -134,14 +134,27 @@ export default {
               }
             }, 1000);
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     verifyCode() {
+      // 判断手机号
+      if (this.phone.length == 0) {
+        Toast(this.APPNAME+"请输入手机号码");
+        return false;
+      } else if (this.phone.length != 11) {
+        Toast(this.APPNAME+"请输入正确的手机号码");
+        return false;
+      }
+      // 手机验证码
+      if (this.sms.length == 0) {
+        Toast(this.APPNAME+"请输入手机验证码");
+        return false;
+      }
       apiFindBackPwByPhone1({
         data: crypto.encrypt(
           JSON.stringify({
@@ -156,30 +169,30 @@ export default {
             this.type = 1;
             this.token = result.data;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     changePwd() {
       // 判断数据
       // 密码
       if (this.password.length == "") {
-        Toast("请输入登录密码")
-        return false
+        Toast(this.APPNAME+"请输入登录密码");
+        return false;
       } else if (this.password.length < 6 || this.password.length > 20) {
-        Toast("登录密码不能少于 6位/密码不能超过20位")
-        return false
+        Toast(this.APPNAME+"登录密码不能少于 6位/密码不能超过20位");
+        return false;
       }
       // 重复密码
       if (this.resPassword.length == "") {
-        Toast("请重复输入登录密码")
-        return false
+        Toast(this.APPNAME+"请重复输入登录密码");
+        return false;
       } else if (this.password !== this.resPassword) {
-        Toast("两次输入登录密码不一致")
-        return false
+        Toast(this.APPNAME+"两次输入登录密码不一致");
+        return false;
       }
       apiFindBackPwByPhone2({
         data: crypto.encrypt(
@@ -196,14 +209,14 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast("密码修改成功！");
+            Toast(this.APPNAME+"密码修改成功！");
             this.$router.replace({ name: "Login" });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     passwordEyeFn() {
@@ -230,14 +243,9 @@ export default {
 
 
 <style lang="less">
-html,
-body,
-#app {
-  height: 100%;
-}
 .register {
   background-color: #fff;
-  height: 100%;
+  height: 100vh;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;

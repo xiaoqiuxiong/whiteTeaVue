@@ -113,14 +113,13 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            // Toast.success('添加收货地址成功');
-            this.$router.push({name: 'Address'})
+            this.$router.push({ name: "Address" });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME + result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME + "网络故障，请刷新重试");
         });
     },
     setAddressShow() {
@@ -156,7 +155,7 @@ export default {
       }
       picker.setColumnValues(2, districtData);
       this.values = values;
-    },
+    }
   },
   computed: {
     allAddress() {

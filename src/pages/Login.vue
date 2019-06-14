@@ -19,13 +19,7 @@
       <van-row type="flex" justify="center">
         <van-col span="22">
           <van-cell-group>
-            <van-field
-              v-model="phone"
-              clearable
-              label="手机号码"
-              placeholder="请输入手机号码"
-              :error-message="phoneError"
-            />
+            <van-field v-model="phone" clearable label="手机号码" placeholder="请输入手机号码"/>
             <van-field
               v-model="password"
               :type="passwordEyeType"
@@ -33,7 +27,6 @@
               placeholder="请输入登录密码"
               :right-icon="passwordEye"
               @click-right-icon="passwordEyeFn"
-              :error-message="passwordError"
             />
 
             <div class="van-cell register-btn">
@@ -65,17 +58,19 @@ import md5 from "js-md5";
 import { apiLogin, apiWxLogin, apiGetWebAccessToken } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
+import axios from "axios";
 export default {
   data() {
     return {
       active: 1,
       phone: "",
-      phoneError: "",
       password: "",
-      passwordError: "",
       passwordEye: "closed-eye",
       passwordEyeType: "password",
-      code: ""
+      code: "",
+      open_id: "",
+      nickname: "",
+      headurl: ""
     };
   },
   created() {
@@ -84,20 +79,19 @@ export default {
       this.$router.push({ name: "Home" });
     }
     this.code = this.getUrlCode().code;
-    alert(location.search)
-    if (this.code != null || this.code !== "") {
-      // this.getGetWebAccessToken();
+    if (this.code) {
+      this.getGetWebAccessToken();
     }
   },
   methods: {
     wxLogin() {
-      if (this.code == null || this.code === "") {
-        let local = window.location.href; // 获取页面url
-        // 如果没有code，则去请求
-        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
-          local
-        )}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`;
-      }
+      let local = window.location.href; // 获取页面url
+      // 如果没有code，则去请求
+      window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
+        this.APPID
+      }&redirect_uri=${encodeURIComponent(
+        local
+      )}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`;
     },
     getUrlCode() {
       // 截取url中的code方法
@@ -113,21 +107,6 @@ export default {
       }
       return theRequest;
     },
-    getCode() {
-      // 非静默授权，第一次有弹框
-      this.code = "";
-      let local = window.location.href; // 获取页面url
-      this.code = this.getUrlCode().code; // 截取code
-      if (this.code == null || this.code === "") {
-        // 如果没有code，则去请求
-        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
-          local
-        )}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`;
-      } else {
-        // 你自己的业务逻辑
-        this.getGetWebAccessToken();
-      }
-    },
     getGetWebAccessToken() {
       apiGetWebAccessToken({
         data: crypto.encrypt(JSON.stringify({ code: this.code }))
@@ -137,39 +116,141 @@ export default {
             result = JSON.parse(crypto.decrypt(result.data));
             this.open_id = result.openid;
             this.access_token = result.access_token;
+            axios
+              .get(
+                `/api/sns/userinfo?access_token=${this.access_token}&openid=${
+                  this.open_id
+                }&lang=zh_CN`
+              )
+              .then(result => {
+                if (result.data.errcode) {
+                  Toast({
+                    mask: true,
+                    message: this.APPNAME + "微信登录失败，请刷新重试",
+                    duration: 1500,
+                    onClose: () => {
+                      this.$router.replace({ name: "Login" });
+                    }
+                  });
+                } else {
+                  this.open_id = result.data.openid;
+                  this.nickname = result.data.nickname;
+                  this.headurl = result.data.headimgurl;
+                  apiWxLogin({
+                    data: crypto.encrypt(
+                      JSON.stringify({
+                        open_id: this.open_id.toString(),
+                        nickname: this.nickname,
+                        headurl: this.headurl
+                      })
+                    )
+                  })
+                    .then(result => {
+                      if (result.code == 0) {
+                        result = JSON.parse(crypto.decrypt(result.data));
+                        this.$store.commit("setToken", result.token);
+                        this.$store.commit("setUserInfo", result.info);
+                        this.$store.commit(
+                          "setHasMask",
+                          result.mask_info.can_show
+                        );
+                        Toast({
+                          type: "success",
+                          message: "登录成功",
+                          duration: 1500,
+                          onClose: () => {
+                            this.$router.replace({neme: 'Home'})
+                          }
+                        });
+                      } else if (
+                        result.code == -10086 &&
+                        result.ret == "success"
+                      ) {
+                        result = crypto.decrypt(result.data);
+                        this.$router.replace({
+                          path: "/bindPhone",
+                          query: {
+                            open_id: this.open_id,
+                            nickname: this.nickname,
+                            headurl: this.headurl,
+                            token: result
+                          }
+                        });
+                      } else {
+                        Toast({
+                          mask: true,
+                          message: this.APPNAME + "微信登录失败，请刷新重试",
+                          duration: 1500,
+                          onClose: () => {
+                            this.$router.replace({ name: "Login" });
+                          }
+                        });
+                      }
+                    })
+                    .catch(err => {
+                      Toast({
+                        mask: true,
+                        message: this.APPNAME + "微信登录失败，请刷新重试",
+                        duration: 1500,
+                        onClose: () => {
+                          this.$router.replace({ name: "Login" });
+                        }
+                      });
+                    });
+                }
+              })
+              .catch(err => {
+                Toast({
+                  mask: true,
+                  message: this.APPNAME + "微信登录失败，请刷新重试",
+                  duration: 1500,
+                  onClose: () => {
+                    this.$router.replace({ name: "Login" });
+                  }
+                });
+              });
+            return false;
           } else {
-            Toast(result.msg);
+            Toast({
+              mask: true,
+              message: this.APPNAME + result.msg,
+              duration: 1500,
+              onClose: () => {
+                this.$router.replace({ name: "Login" });
+              }
+            });
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast({
+            mask: true,
+            message: this.APPNAME + this.ERRORNETWORK,
+            duration: 1500,
+            onClose: () => {
+              this.$router.replace({ name: "Login" });
+            }
+          });
         });
     },
     // 登录数据判断
     actionLogin() {
-      // 数据判断
-      let isTrue = true;
       // 手机号码
       if (this.phone.length == 0) {
-        isTrue = false;
-        this.phoneError = "请输入手机号码";
+        Toast(this.APPNAME + "请输入手机号码");
+        return false;
       } else if (this.phone.length != 11) {
-        isTrue = false;
-        this.phoneError = "请输入正确的手机号码";
-      } else {
-        this.phoneError = "";
+        Toast(this.APPNAME + "请输入正确的手机号码");
+        return false;
       }
       // 密码
       if (this.password.length == "") {
-        isTrue = false;
-        this.passwordError = "请输入登录密码";
+        Toast(this.APPNAME + "请输入登录密码");
+        return false;
       } else if (this.password.length < 6 || this.password.length > 20) {
-        isTrue = false;
-        this.passwordError = "登录密码不能少于 6位/密码不能超过20位";
-      } else {
-        this.passwordError = "";
+        Toast(this.APPNAME + "登录密码不能少于6位/密码不能超过20位");
+        return false;
       }
-      if (isTrue) this.actionLoginAxios();
+      this.actionLoginAxios();
     },
     // 登录数据提交
     actionLoginAxios() {
@@ -189,7 +270,10 @@ export default {
         .then(result => {
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
+
             this.$store.commit("setToken", result.token);
+            this.$store.commit("setUserInfo", {});
+            this.$store.commit("setHasMask", result.mask_info.can_show);
             Toast({
               type: "success",
               message: "登录成功",
@@ -199,11 +283,11 @@ export default {
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME + result.msg);
           }
         })
         .catch(err => {
-          Toast("登录失败，请刷新重试");
+          Toast(this.APPNAME + "登录失败，请刷新重试");
         });
     },
     onClick(index, title) {
@@ -235,14 +319,9 @@ export default {
 
 
 <style lang="less" scope>
-html,
-body,
-#app {
-  height: 100%;
-}
 .register {
   background-color: #fff;
-  height: 100%;
+  height: 100vh;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;

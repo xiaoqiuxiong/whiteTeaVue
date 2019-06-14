@@ -109,13 +109,13 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
           this.loading = false;
           this.timer2 = null;
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     onSearch() {},

@@ -55,7 +55,7 @@
           </div>
           <div class="title">
             <div>{{goodsInfo.goods_name}}</div>
-            <div class="share"></div>
+            <!-- <div class="share"></div> -->
           </div>
 
           <div class="more-info">
@@ -118,12 +118,13 @@
         <!-- 图片详情 area -->
         <div class="goods-pic-are" ref="goodsPicAre">
           <img class="top" width="64%" :src="good_detail" alt>
-          <img :src="goodsInfo.detial_img" width="100%" alt>
+          <img v-lazy="goodsInfo.detial_img" width="100%" alt>
         </div>
         <!-- 底部导航 area-->
         <van-goods-action class="footer-area">
           <van-goods-action-icon icon="wap-home" text="首页" @click="onClickMiniBtn"/>
-          <van-goods-action-icon icon="chat-o" text="客服"/>
+          <van-goods-action-icon icon="chat-o" @click="$refs.callphone.click()" text="客服"/>
+          <a ref="callphone" style="display:none" href="tel:0755-86571923"></a>
           <van-goods-action-button @click="showBuyFn" class="first-btn" text="加入购物车"/>
           <van-goods-action-button @click="showBuyFn" class="last-btn" primary text="立即购买"/>
         </van-goods-action>
@@ -319,11 +320,11 @@ export default {
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     onChangeStepper(value) {},

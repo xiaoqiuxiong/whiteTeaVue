@@ -2,18 +2,21 @@
   <div class="sureOrder">
     <!-- 导航栏 area -->
     <van-nav-bar
+      fixed
       class="nav-area addaddress"
       :title="$route.meta.title"
       left-arrow
       @click-left="returnPrePage"
     >
-      <van-icon name="weapp-nav" slot="right"/>
+      <van-icon @click="$refs.menu.isShow(true)" name="weapp-nav" slot="right"/>
     </van-nav-bar>
+    <Menu ref="menu"></Menu>
+
     <!-- 地址栏 area -->
     <router-link :to="{name: 'Address'}" class="address-area">
       <div class="left">
-        <div class="top">{{receive_address.consignee}}&nbsp;&nbsp;&nbsp;{{receive_address.mobile}}</div>
-        <div class="bottom">{{receive_address.address_combine}}</div>
+        <div class="top">{{address_consignee}}&nbsp;&nbsp;&nbsp;{{address_mobile}}</div>
+        <div class="bottom">{{address_combine}}</div>
       </div>
       <div class="right">
         <van-icon name="arrow" size="18"/>
@@ -41,22 +44,19 @@
       </div>
       <!-- 订单信息 area -->
       <div class="order-tip-area">
-        <van-cell-group>
+        <van-cell-group v-if="!is_mask_goods">
           <van-field
             class="auto-filed"
             placeholder="填写备注内容"
             label="订单备注(选填)："
             :left-icon="remarkIcon"
+            v-model="order_infos.postscript"
           />
+
           <!-- 用户含有余额、积贝时，展示对应支付方式 -->
           <van-checkbox-group class="autoRadio" v-model="isPayJibei">
             <van-cell-group>
-              <van-cell
-                @click="isPayJibei = (isPayJibei.length==1?[]:['1'])"
-                :icon="isPayJibeiIcon"
-                title="使用积贝进行抵扣"
-                clickable
-              >
+              <van-cell @click="checkBoxJibei" :icon="isPayJibeiIcon" title="使用积贝进行抵扣" clickable>
                 <van-checkbox checked-color="#fe672c" name="1">
                   <img
                     slot="icon"
@@ -79,12 +79,7 @@
           </van-cell-group>
           <van-checkbox-group class="autoRadio" v-model="isPayStatic">
             <van-cell-group>
-              <van-cell
-                :icon="isPayYueIcon"
-                title="使用账户余额抵扣"
-                clickable
-                @click="isPayStatic = (isPayStatic.length==1?[]:['1'])"
-              >
+              <van-cell :icon="isPayYueIcon" title="使用账户余额抵扣" clickable @click="checkBoxStatic">
                 <van-checkbox checked-color="#fe672c" name="1">
                   <img
                     slot="icon"
@@ -106,6 +101,21 @@
             />
           </van-cell-group>
         </van-cell-group>
+        <van-cell-group v-if="is_mask_goods">
+          <van-field
+            class="auto-filed"
+            placeholder="填写备注内容"
+            label="订单备注(选填)："
+            :left-icon="remarkIcon"
+            v-model="order_infos.postscript"
+          />
+          <van-cell
+            title="运费"
+            class="freight"
+            :icon="remarkIcon"
+            :value="`¥${mask_goods.transferMoney}`"
+          />
+        </van-cell-group>
       </div>
     </div>
     <!-- 支付方式 area -->
@@ -113,7 +123,13 @@
       <div class="title">支付方式</div>
       <van-radio-group class="autoRadio" v-model="isPayType">
         <van-cell-group>
-          <van-cell :icon="payWechatIcon" title="微信支付" clickable @click="isPayType = '1'">
+          <van-cell
+            v-if="isWeiXin"
+            :icon="payWechatIcon"
+            title="微信支付"
+            clickable
+            @click="isPayType = '1'"
+          >
             <van-radio checked-color="#fe672c" name="1">
               <img
                 slot="icon"
@@ -162,19 +178,25 @@
 </template>
 <!-- 按钮 -->
 <script>
+import Menu from "../components/Menu.vue";
 import sha1 from "js-sha1";
 import wx from "weixin-js-sdk";
 import {
   apiCheckOrder,
   apiSureOrder,
   apiGetWebAccessToken,
-  apiGetWebAccessTicket
+  apiGetWebAccessTicket,
+  apiSureMaskOrder,
+  apiUserAddress
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
-import { Toast } from "vant";
+import { Toast, Dialog } from "vant";
 import "@/assets/js/ap.js";
 
 export default {
+  components: {
+    Menu
+  },
   data() {
     return {
       cart_ids: [],
@@ -195,7 +217,7 @@ export default {
       balancePayVal: "",
       order_infos: {},
       totalPrice: 0,
-      address_id: 85,
+      address_id: -1,
       alipayData: {},
       wechatData: {},
       code: "",
@@ -204,7 +226,13 @@ export default {
       open_id: "",
       datastr: "",
       signatureStr: "",
-      signature: ""
+      signature: "",
+      is_mask_goods: false,
+      mask_goods: {},
+      addressList: [],
+      address_consignee: "",
+      address_combine: "",
+      address_mobile: ""
     };
   },
   created() {
@@ -215,6 +243,7 @@ export default {
       return false;
     }
     this.cart_ids.push(Number(cartIdsData));
+
     // 检查订单
     this.actionCheckOrder();
     if (this.isWeiXin) {
@@ -223,6 +252,23 @@ export default {
     }
   },
   methods: {
+    checkBoxJibei() {
+      if (this.isPayJibei.length == 1) {
+        this.isPayJibei = [];
+        this.coinsPayVal = "";
+        this;
+      } else {
+        this.isPayJibei = ["1"];
+      }
+    },
+    checkBoxStatic() {
+      if (this.isPayStatic.length == 1) {
+        this.isPayStatic = [];
+        this.balancePayVal = "";
+      } else {
+        this.isPayStatic = ["1"];
+      }
+    },
     getCode() {
       // 非静默授权，第一次有弹框
       this.code = "";
@@ -262,11 +308,11 @@ export default {
             result = JSON.parse(crypto.decrypt(result.data));
             this.jsapi_ticket = result;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getGetWebAccessToken() {
@@ -279,11 +325,11 @@ export default {
             this.open_id = result.openid;
             this.access_token = result.access_token;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     wexinPay() {
@@ -317,13 +363,31 @@ export default {
           signType: wechatData.signType,
           paySign: wechatData.paySign,
           success: function(res) {
-            _self.$router.push({ name: "PayState" });
+            _self.$router.push({
+              name: "PayState",
+              query: {
+                order_sn: _self.wechatData.orderSn,
+                status: "订单支付成功"
+              }
+            });
           },
           cancel: function(res) {
-            _self.$router.push({ name: "Orders" });
+            _self.$router.push({
+              name: "PayState",
+              query: {
+                order_sn: _self.wechatData.orderSn,
+                status: "订单支付失败"
+              }
+            });
           },
           fail: function(res) {
-            _self.$router.push({ name: "Orders" });
+            _self.$router.push({
+              name: "PayState",
+              query: {
+                order_sn: _self.wechatData.orderSn,
+                status: "订单支付失败"
+              }
+            });
           }
         });
       });
@@ -347,52 +411,93 @@ export default {
     // 计算价格
     calcPrice(type) {
       let subTotalPrice = 0;
-      const maxcoins = this.spec_pay_config.max_pay_coins;
-      const maxbalance = this.spec_pay_config.max_pay_balance;
-      const maxPrice = this.cart_goods_infos[0].subtotal;
-      if (type) {
-        if (maxcoins > maxbalance) {
-          if (this.farmatNum(this.coinsPayVal) > maxbalance) {
-            this.coinsPayVal = maxbalance;
+      const max1 = this.spec_pay_config.max_pay_coins || 0;
+      const max2 = this.spec_pay_config.max_pay_balance || 0;
+      const max3 = this.cart_goods_infos[0].subtotal || 0;
+      const val1 = parseFloat(this.coinsPayVal) || 0;
+      const val2 = parseFloat(this.balancePayVal) || 0;
+      // 判断勾选了积贝或者余额，三种
+      // 积贝+余额
+      if (this.isPayJibei.length > 0 && this.isPayStatic.length > 0) {
+        if (type) {
+          // 改变积贝
+          if (max1 > max3) {
+            if (val1 > max3) {
+              this.coinsPayVal = max3;
+              if (this.coinsPayVal + val2 > max3) {
+                this.balancePayVal = max3 - this.coinsPayVal;
+              }
+            } else {
+              if (val1 + val2 > max3) {
+                this.balancePayVal = max3 - val1;
+              }
+            }
+          } else {
+            if (val1 > max1) {
+              this.coinsPayVal = max1;
+              if (this.coinsPayVal + val2 > max3) {
+                this.balancePayVal = max3 - this.coinsPayVal;
+              }
+            } else {
+              if (val1 + val2 > max3) {
+                this.balancePayVal = max3 - val1;
+              }
+            }
           }
         } else {
-          if (this.farmatNum(this.coinsPayVal) > maxcoins) {
-            this.coinsPayVal = maxcoins;
+          // 改变余额
+          if (max2 > max3) {
+            if (val2 > max3) {
+              this.balancePayVal = max3;
+              if (val1 + this.balancePayVal > max3) {
+                this.coinsPayVal = max3 - this.balancePayVal;
+              }
+            } else {
+              if (val1 + val2 > max3) {
+                this.coinsPayVal = max3 - val2;
+              }
+            }
+          } else {
+            if (val2 > max2) {
+              this.balancePayVal = max2;
+              if (val1 + this.balancePayVal > max3) {
+                this.coinsPayVal = max3 - this.balancePayVal;
+              }
+            } else {
+              if (val1 + val2 > max3) {
+                this.coinsPayVal = max3 - val2;
+              }
+            }
           }
-        }
-        if (this.farmatNum(this.coinsPayVal) > maxPrice) {
-          this.coinsPayVal = maxPrice;
-        }
-        if (
-          this.farmatNum(this.coinsPayVal) +
-            this.farmatNum(this.balancePayVal) >
-            maxPrice &&
-          this.isPayStatic.length > 0
-        ) {
-          this.balancePayVal = maxPrice - this.farmatNum(this.coinsPayVal);
-        }
-      } else {
-        if (maxcoins > maxbalance) {
-          if (this.farmatNum(this.balancePayVal) > maxbalance) {
-            this.balancePayVal = maxbalance;
-          }
-        } else {
-          if (this.farmatNum(this.balancePayVal) > maxcoins) {
-            this.balancePayVal = maxcoins;
-          }
-        }
-        if (this.farmatNum(this.balancePayVal) > maxPrice) {
-          this.balancePayVal = maxPrice;
-        }
-        if (
-          this.farmatNum(this.balancePayVal) +
-            this.farmatNum(this.coinsPayVal) >
-            maxPrice &&
-          this.isPayJibei.length > 0
-        ) {
-          this.coinsPayVal = maxPrice - this.farmatNum(this.balancePayVal);
         }
       }
+      // 积贝
+      if (this.isPayJibei.length > 0 && this.isPayStatic.length == 0) {
+        // 判断最大积贝和需要支付金额谁最大
+        if (max1 > max3) {
+          if (val1 > max3) {
+            this.coinsPayVal = max3;
+          }
+        } else {
+          if (val1 > max1) {
+            this.coinsPayVal = max1;
+          }
+        }
+      }
+      // 余额
+      if (this.isPayJibei.length == 0 && this.isPayStatic.length > 0) {
+        // 判断最大余额和需要支付金额谁最大
+        if (max2 > max3) {
+          if (val2 > max3) {
+            this.balancePayVal = max3;
+          }
+        } else {
+          if (val2 > max2) {
+            this.balancePayVal = max2;
+          }
+        }
+      }
+
       subTotalPrice =
         this.farmatNum(this.coinsPayVal) + this.farmatNum(this.balancePayVal);
       this.totalPrice = (
@@ -412,18 +517,166 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            this.receive_address = result.data.receive_address;
+            this.address_id = result.data.receive_address.address_id;
             this.cart_goods_infos = result.data.cart_goods_infos;
             this.spec_pay_config = result.data.spec_pay_config;
             this.order_infos = result.data.order_infos;
             this.totalPrice = this.cart_goods_infos[0].subtotal;
+            if (result.data.is_mask_goods) {
+              this.mask_goods = result.data.mask_goods;
+              this.is_mask_goods = result.data.is_mask_goods;
+              this.totalPrice += this.mask_goods.transferMoney;
+            }
+            if (this.$route.query.address_id) {
+              this.address_id = parseFloat(this.$route.query.address_id);
+            } else {
+              this.address_consignee = result.data.receive_address.consignee;
+              this.address_mobile = result.data.receive_address.mobile;
+            }
+            apiUserAddress().then(result => {
+              if (result.code == 0) {
+                this.addressList = JSON.parse(crypto.decrypt(result.data));
+                console.log(this.addressList);
+                this.addressList.filter((e, i) => {
+                  if (e.address_id == this.address_id) {
+                    this.address_consignee = e.consignee;
+                    this.address_mobile = e.mobile;
+                    this.allAddress.province.filter((e1, i1) => {
+                      if (e.province == e1.region_id) {
+                        this.address_combine = e1.region_name;
+                      }
+                    });
+                    this.allAddress.citys.filter((e1, i1) => {
+                      if (e.city == e1.region_id) {
+                        this.address_combine += `-${e1.region_name}`;
+                      }
+                    });
+                    this.allAddress.district.filter((e1, i1) => {
+                      if (e.district == e1.region_id) {
+                        this.address_combine += `-${e1.region_name}`;
+                      }
+                    });
+                    this.address_combine += `-${e.address}`;
+                    this.order_infos.address = this.address_combine;
+                  }
+                });
+              } else {
+                Toast(this.APPNAME+result.msg);
+              }
+            });
+          } else if (result.code == 10087) {
+            Dialog.confirm({
+              title: "提示",
+              message: "亲，先添加收货地址再购物哦",
+              confirmButtonText: "去添加地址"
+            })
+              .then(() => {
+                this.$router.replace({ name: "Address" });
+              })
+              .catch(() => {
+                this.$router.replace({ name: "Home" });
+              });
           } else {
+            Toast(this.APPNAME+result.msg);
             this.$router.replace({ name: "Home" });
+          }
+          if (this.$route.query.address_id) {
+            apiUserAddress()
+              .then(result => {
+                if (result.code == 0) {
+                  this.addressList = JSON.parse(crypto.decrypt(result.data));
+                  this.addressList.filter((e, i) => {
+                    if (e.address_id == this.$route.query.address_id) {
+                      this.receive_address = e;
+                    }
+                  });
+                } else {
+                  Toast(this.APPNAME+result.msg);
+                }
+              })
+              .catch(err => {
+                Toast(this.APPNAME+this.ERRORNETWORK);
+              });
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
+    },
+    submitAfter(result) {
+      if (result.code == 0) {
+        result = JSON.parse(crypto.decrypt(result.data));
+        if (this.order_infos.pay_id == 4 || this.order_infos.pay_id == 15) {
+          this.$router.push({
+            name: "PayState",
+            query: {
+              order_sn: result.order_sn[0],
+              status: result.status
+            }
+          });
+        } else if (this.order_infos.pay_id == 1) {
+          const alipayData = this.getUrlParams(result.keyValues);
+          this.alipayData = {
+            biz_content: alipayData.biz_content,
+            app_id: alipayData.app_id,
+            timestamp: alipayData.timestamp,
+            sign: alipayData.sign,
+            method: alipayData.method,
+            version: alipayData.version,
+            format: alipayData.format,
+            charset: alipayData.charset,
+            notify_url: alipayData.notify_url,
+            return_url: alipayData.return_url,
+            sign_type: alipayData.sign_type
+          };
+          if (this.isWeiXin) {
+            setTimeout(() => {
+              var btn = document.querySelector(".J-btn-submit");
+              btn.addEventListener(
+                "click",
+                function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  var queryParam = "";
+                  Array.prototype.slice
+                    .call(document.querySelectorAll("input[type=hidden]"))
+                    .forEach(function(ele) {
+                      queryParam +=
+                        "&" + ele.name + "=" + encodeURIComponent(ele.value);
+                    });
+                  var gotoUrl =
+                    document.querySelector("#pay_form").getAttribute("action") +
+                    "?" +
+                    queryParam;
+                  _AP.pay(gotoUrl);
+                  return false;
+                },
+                false
+              );
+              btn.click();
+            }, 500);
+          } else {
+            setTimeout(() => {
+              this.$refs.form.submit();
+            }, 500);
+          }
+        } else if (this.order_infos.pay_id == 11) {
+          this.wechatData = {
+            appId: result.appId,
+            nonceStr: result.nonceStr,
+            orderSn: result.order_sn,
+            paySign: result.paySign,
+            timeStamp: result.timestamp.toString(),
+            signType: result.signType,
+            package: result.package
+          };
+          this.datastr = JSON.stringify(this.wechatData);
+          this.wexinPay();
+        }
+      } else {
+        Toast(this.APPNAME+result.msg);
+      }
     },
     onSubmit() {
       if (this.isPayType == "1") {
@@ -449,110 +702,64 @@ export default {
       if (this.isPayJibei.length > 0 && this.farmatNum(this.coinsPayVal) > 0) {
         this.order_infos.coins = this.farmatNum(this.coinsPayVal);
       }
-
-      apiSureOrder({
-        data: crypto.encrypt(
-          JSON.stringify({
-            address_id: this.address_id,
-            cart_ids: this.cart_ids,
-            order: this.order_infos,
-            open_id: this.open_id,
-            is_web: true
-          })
-        )
-      })
-        .then(result => {
-          if (result.code == 0) {
-            result = JSON.parse(crypto.decrypt(result.data));
-            if (this.order_infos.pay_id == 4 || this.order_infos.pay_id == 15) {
-              this.$router.push({
-                name: "PayState",
-                query: {
-                  order_sn: result.order_sn[0],
-                  status: result.status,
-                  coins: this.order_infos.coins,
-                  balance: this.order_infos.surplus
-                }
-              });
-            } else if (this.order_infos.pay_id == 1) {
-              const alipayData = this.getUrlParams(result.keyValues);
-              this.alipayData = {
-                biz_content: alipayData.biz_content,
-                app_id: alipayData.app_id,
-                timestamp: alipayData.timestamp,
-                sign: alipayData.sign,
-                method: alipayData.method,
-                version: alipayData.version,
-                format: alipayData.format,
-                charset: alipayData.charset,
-                notify_url: alipayData.notify_url,
-                return_url: alipayData.return_url,
-                sign_type: alipayData.sign_type
-              };
-              if (this.isWeiXin) {
-                setTimeout(() => {
-                  var btn = document.querySelector(".J-btn-submit");
-                  btn.addEventListener(
-                    "click",
-                    function(e) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      e.stopImmediatePropagation();
-
-                      var queryParam = "";
-                      Array.prototype.slice
-                        .call(document.querySelectorAll("input[type=hidden]"))
-                        .forEach(function(ele) {
-                          queryParam +=
-                            "&" +
-                            ele.name +
-                            "=" +
-                            encodeURIComponent(ele.value);
-                        });
-                      var gotoUrl =
-                        document
-                          .querySelector("#pay_form")
-                          .getAttribute("action") +
-                        "?" +
-                        queryParam;
-                      _AP.pay(gotoUrl);
-                      return false;
-                    },
-                    false
-                  );
-                  btn.click();
-                }, 500);
-              } else {
-                setTimeout(() => {
-                  this.$refs.form.submit();
-                }, 500);
-              }
-            } else if (this.order_infos.pay_id == 11) {
-              this.wechatData = {
-                appId: result.appId,
-                nonceStr: result.nonceStr,
-                orderSn: result.order_sn,
-                paySign: result.paySign,
-                timeStamp: result.timestamp.toString(),
-                signType: result.signType,
-                package: result.package
-              };
-              this.datastr = JSON.stringify(this.wechatData);
-              this.wexinPay();
-            }
-          } else {
-            Toast(result.msg);
-          }
+      if (this.$route.query.type) {
+        apiSureMaskOrder({
+          data: crypto.encrypt(
+            JSON.stringify({
+              address_id: this.address_id,
+              cart_ids: this.cart_ids,
+              order: this.order_infos,
+              open_id: this.open_id,
+              is_web: true,
+              type: this.$route.query.type
+            })
+          )
         })
-        .catch(err => {
-          Toast(this.ERRORNETWORK);
-        });
+          .then(result => {
+            this.submitAfter(result);
+          })
+          .catch(err => {
+            Toast(this.APPNAME+this.ERRORNETWORK);
+          });
+      } else {
+        apiSureOrder({
+          data: crypto.encrypt(
+            JSON.stringify({
+              address_id: this.address_id,
+              cart_ids: this.cart_ids,
+              order: this.order_infos,
+              open_id: this.open_id,
+              is_web: true
+            })
+          )
+        })
+          .then(result => {
+            this.submitAfter(result);
+          })
+          .catch(err => {
+            Toast(this.APPNAME+this.ERRORNETWORK);
+          });
+      }
+    }
+  },
+  computed: {
+    allAddress() {
+      return JSON.parse(this.$store.state.allAddress);
     }
   }
 };
 </script>
 
 <style lang="less" scoped>
+.freight {
+  .van-cell__value {
+    justify-content: flex-end;
+    span {
+      color: #ff5716;
+      font-size: 14px;
+    }
+  }
+}
 .alipayForm {
   display: none;
 }
@@ -650,7 +857,7 @@ export default {
   }
 }
 .address-area {
-  margin-top: 6px;
+  margin-top: 52px;
   padding: 20px;
   background-color: #fff;
   display: flex;

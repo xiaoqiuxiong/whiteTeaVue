@@ -64,19 +64,19 @@ export default {
     userWithdraw() {
       // 判断数据
       if (!this.card_id) {
-        Toast("请输入支付宝账号");
+        Toast(this.APPNAME+"请输入支付宝账号");
         return false;
       }
       if (!this.name) {
-        Toast("请输入真实姓名");
+        Toast(this.APPNAME+"请输入真实姓名");
         return false;
       }
       if (!this.amount) {
-        Toast("请输入提现金额");
+        Toast(this.APPNAME+"请输入提现金额");
         return false;
       }
       if (this.amount > this.userInfo.user_info.user_money) {
-        Toast("提现金额不能大于可提现金额");
+        Toast(this.APPNAME+"提现金额不能大于可提现金额");
         this.amount = this.userInfo.user_info.user_money;
         return false;
       }
@@ -94,14 +94,14 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast("提现成功");
+            Toast(this.APPNAME+"提现成功");
             this.$router.push({ name: "MyProperty" });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getUserInfo() {
@@ -110,11 +110,11 @@ export default {
           if (result.code == 0) {
             this.userInfo = result.data;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

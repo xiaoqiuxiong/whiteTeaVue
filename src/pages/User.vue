@@ -14,6 +14,7 @@
         <div class="right" v-if="userInfo.user_info">{{userInfo.user_info.user_name}}</div>
       </div>
     </div>
+
     <div class="bottom-area">
       <!-- 选项 area -->
       <div class="options-list-area option1">
@@ -42,6 +43,9 @@
             >{{userInfo.user_info.rank_points | moneyFilter}}</div>
           </div>
         </div>
+      </div>
+      <div class="mask">
+        <img @click="$router.push({name: 'InviteToGetGift'})" :src="require('@/assets/images/mask_activity/02.png')" alt>
       </div>
       <!-- 选项 area -->
       <div class="options-list-area option2">
@@ -108,7 +112,12 @@
 </template>
 
 <script>
-import { apiUserIndex } from "@/request/api";
+import {
+  apiUserIndex,
+  apiGetMask,
+  apiBuyNow,
+  apiIsUserCanGetMask
+} from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
@@ -129,7 +138,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     logout() {
@@ -141,8 +150,17 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.mask {
+  width: 100%;
+  padding: 10px 0;
+  padding-bottom: 0;
+  img {
+    width: 100%;
+  }
+}
 .logout-area {
   margin-top: 10px;
+  padding-bottom: 20px;
   button {
     font-size: 12px;
     color: #999;

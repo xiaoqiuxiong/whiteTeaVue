@@ -69,11 +69,11 @@ export default {
           if (result.code == 0) {
             this.pay_points = result.data.user_info.rank_points;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     onRefresh() {
@@ -117,14 +117,14 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
           this.loading = false;
           this.timer1 = null;
           this.timer2 = null;
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

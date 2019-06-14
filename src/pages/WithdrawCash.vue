@@ -82,11 +82,11 @@ export default {
           if (result.code == 0) {
             this.list = JSON.parse(crypto.decrypt(result.data));
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     del(id) {
@@ -99,26 +99,26 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast.success("删除收货地址成功");
+            Toast(this.APPNAME+"删除收货地址成功");
             this.list.filter((item, index) => {
               if (item.address_id == id) {
                 this.list.splice(index, 1);
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     onAdd() {
-      Toast("新增地址");
+      Toast(this.APPNAME+"新增地址");
     },
 
     onEdit(item, index) {
-      Toast("编辑地址:" + index);
+      Toast(this.APPNAME+"编辑地址:" + index);
     }
   }
 };

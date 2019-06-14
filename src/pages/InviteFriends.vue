@@ -67,11 +67,11 @@ export default {
         if (result.code == 0) {
           this.duiChongRule = result.data;
         } else {
-          Toast(result.msg);
+          Toast(this.APPNAME+result.msg);
         }
       })
       .catch(err => {
-        Toast(this.ERRORNETWORK);
+        Toast(this.APPNAME+this.ERRORNETWORK);
       });
     this.getInviteUserInfo();
     this.getUserDuiChongInfo();
@@ -92,9 +92,8 @@ export default {
             result.user_id
           }&key=`;
           this.value = this.url
-          console.log(this.url);
         } else {
-          Toast(result.msg);
+          Toast(this.APPNAME+result.msg);
         }
       });
     },
@@ -105,9 +104,8 @@ export default {
           this.duichongUrl = `${location.origin}/#/bindFriends?parent_id=${
             result.parent_id
           }&key=${result.uid}`;
-          console.log(this.duichongUrl);
         } else {
-          Toast(result.msg);
+          Toast(this.APPNAME+result.msg);
         }
       });
     },

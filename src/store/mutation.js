@@ -10,10 +10,14 @@ export default {
       localStorage.removeItem('token');
     }
   },
+  setHasMask(state,hasMask){
+    state.hasMask = hasMask
+    localStorage.hasMask = state.hasMask
+  },
   // userInfo
   setUserInfo(state,userInfo) {
     state.userInfo = userInfo
-    localStorage.userInfo = state.userInfo
+    localStorage.userInfo = JSON.stringify(state.userInfo)
   },
   // allAddress
   setAllAddress(state,allAddress) {

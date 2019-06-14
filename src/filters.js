@@ -1,42 +1,26 @@
 export default {
-  toMoney: function(money = 0) {
+  toMoney: function (money = 0) {
     return parseFloat(money).toFixed(2);
   },
   // 没有时间点
-  toDate: function(time) {
+  toDate: function (time) {
     let d = new Date(time * 1000); //根据时间戳生成的时间对象
     let value = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
     return value;
   },
   // 有时间点
-  toTime: function(time) {
-    let d = new Date(time * 1000); //根据时间戳生成的时间对象
-    let value =
-      d.getFullYear() +
-      "-" +
-      (d.getMonth() + 1 >= 10
-        ? d.getMonth() + 1
-        : `0${(d.getMonth() + 1).toString()}`) +
-      "-" +
-      (d.getDate() + 1 >= 10
-        ? d.getDate() + 1
-        : `0${(d.getDate() + 1).toString()}`) +
-      " " +
-      (d.getHours() + 1 >= 10
-        ? d.getHours() + 1
-        : `0${(d.getHours() + 1).toString()}`) +
-      ":" +
-      (d.getMinutes() + 1 >= 10
-        ? d.getMinutes() + 1
-        : `0${(d.getMinutes() + 1).toString()}`) +
-      ":" +
-      (d.getSeconds() + 1 >= 10
-        ? d.getSeconds() + 1
-        : `0${(d.getSeconds() + 1).toString()}`);
-    return value;
+  toTime: function (timestamp) {
+    let date = new Date(timestamp * 1000); //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+    let Y = date.getFullYear() + '-';
+    let M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+    let D = date.getDate() + ' ';
+    let h = date.getHours() + ':';
+    let m = date.getMinutes() + ':';
+    let s = date.getSeconds();
+    return Y + M + D + h + m + s;
   },
   // JS格式化数字（每三位加逗号）
-  toThousands: function(number) {
+  toThousands: function (number) {
     var number = (number || 0).toString(),
       result = "",
       isDecimals = false,

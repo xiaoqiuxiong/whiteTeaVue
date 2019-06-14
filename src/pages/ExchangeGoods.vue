@@ -48,7 +48,8 @@
         <!-- 底部导航 area-->
         <van-goods-action class="footer-area">
           <van-goods-action-icon icon="wap-home" text="首页" @click="$router.push({name: 'Home'})"/>
-          <van-goods-action-icon icon="chat-o" text="客服"/>
+          <van-goods-action-icon icon="chat-o" @click="$refs.callphone.click()" text="客服"/>
+          <a ref="callphone" style="display:none" href="tel:0755-86571923"></a>
           <van-goods-action-button @click="actionApiBuyNow" class="first-btn" text="立即兑换"/>
         </van-goods-action>
       </div>
@@ -65,7 +66,7 @@ import {
   apiSureOrder
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
-import { Toast } from "vant";
+import { Toast, Dialog } from "vant";
 
 export default {
   components: {
@@ -124,12 +125,24 @@ export default {
             this.order = result.data.order_infos;
             this.address_id = result.data.receive_address.address_id;
             this.onSubmit();
+          } else if (result.code == 10087) {
+            Dialog.confirm({
+              title: "提示",
+              message: "亲，先添加收货地址再购物哦",
+              confirmButtonText: "去添加地址"
+            })
+              .then(() => {
+                this.$router.replace({ name: "Address" });
+              })
+              .catch(() => {
+                Toast(this.APPNAME+'亲，不添加地址无法购物哦')
+              });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     onSubmit() {
@@ -150,15 +163,12 @@ export default {
           } else {
             Toast({
               mask: true,
-              message: result.msg,
-              onClose: () => {
-                // this.$router.go(0);
-              }
+              message: this.APPNAME+result.msg
             });
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     changeSpecification(id, index) {
@@ -169,7 +179,7 @@ export default {
     },
     actionApiBuyNow() {
       if (!this.specificationActive) {
-        Toast("请选择商品规格");
+        Toast(this.APPNAME+"请选择商品规格");
         return false;
       }
       apiExchangeGoods({
@@ -182,15 +192,15 @@ export default {
         .then(result => {
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
-            this.cart_ids = []
+            this.cart_ids = [];
             this.cart_ids.push(result);
             this.actionCheckOrder();
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

@@ -69,7 +69,7 @@ Vue.use(Tab)
   .use(Search)
   .use(Swipe)
   .use(SwipeItem)
-  .use(Lazyload)
+  .use(Lazyload,{error: require('@/assets/images/good_default.png')})
   .use(Tag)
   .use(GoodsAction)
   .use(GoodsActionIcon)
@@ -105,6 +105,7 @@ Vue.filter("numberFilter", filters.toThousands);
 // FastClick.attach(document.body)
 
 Vue.config.productionTip = false;
+
 
 /* eslint-disable no-new */
 new Vue({

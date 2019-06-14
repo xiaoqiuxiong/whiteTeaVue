@@ -49,19 +49,19 @@ export default {
     actionData() {
       // 判断数据
       if (this.card_num == "") {
-        Toast("请正确输入银行卡号");
+        Toast(this.APPNAME+"请正确输入银行卡号");
         return false;
       }
       if (!/^[\u4e00-\u9fa5]+$/.test(this.name)) {
-        Toast("请正确输入姓名");
+        Toast(this.APPNAME+"请正确输入姓名");
         return false;
       }
       if (!/^[0-9a-zA-Z]+$/.test(this.id_card) || this.id_card.length != 18) {
-        Toast("请正确输入身份证号");
+        Toast(this.APPNAME+"请正确输入身份证号");
         return false;
       }
       if (this.phone.length != 11) {
-        Toast("请正确输入手机号码");
+        Toast(this.APPNAME+"请正确输入手机号码");
         return false;
       }
       apiUserAddBankCard({
@@ -77,7 +77,7 @@ export default {
         .then(result => {
           if (result.code == 0) {
             Toast({
-              message: "添加银行卡成功",
+              message: this.APPNAME+"添加银行卡成功",
               type: 'success',
               duration: 1500,
               onClose: ()=>{
@@ -86,11 +86,11 @@ export default {
             });
             
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     }
   }

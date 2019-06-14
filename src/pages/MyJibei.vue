@@ -38,19 +38,19 @@
         >
           <div class="item" v-for="(item, index) in list" :key="index">
             <div
-              @click="$router.push({name: 'ExchangeGoods',query: {goods_id: item.id}})"
-              v-if="item.can_use"
               class="img-box"
+              v-if="item.can_use"
+              @click="$router.push({name: 'ExchangeGoods',query: {goods_id: item.id}})"
             >
-              <van-image lazy-load fill="cover" :src="item.img_url"/>
+              <img v-lazy="item.img_url" alt>
             </div>
             <div
               @click="$router.push({name: 'ExchangeGoods',query: {goods_id: item.id}})"
               v-if="item.can_use"
               class="title van-ellipsis"
             >{{item.title}}</div>
-            <div v-if="!item.can_use" class="img-box">
-              <van-image lazy-load fill="cover" :src="item.img_url"/>
+            <div class="img-box" v-if="!item.can_use" @click="getOther">
+              <img v-lazy="item.img_url" alt>
             </div>
             <div v-if="!item.can_use" class="title van-ellipsis">{{item.title}}</div>
           </div>
@@ -64,6 +64,7 @@
 <script>
 import { apiUserIndex, apiJibeiUseWay } from "@/request/api";
 import crypto from "@/cryptoUtil";
+import { Toast } from "vant";
 export default {
   data() {
     return {
@@ -93,6 +94,9 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    getOther() {
+      Toast(this.APPNAME+"功能正在开发中");
+    },
     onSelect(item) {
       // 点击选项时默认不会关闭菜单，可以手动关闭
       this.show = false;
@@ -236,6 +240,9 @@ export default {
       height: 90px;
       overflow: hidden;
       border-radius: 6px;
+      img{
+        width: 100%;
+      }
     }
   }
 }

@@ -66,11 +66,11 @@ export default {
     ExchangeJiJinJiBei() {
       // 判断数据
       if (!this.number) {
-        Toast("请输入兑换数量");
+        Toast(this.APPNAME+"请输入兑换数量");
         return false;
       }
       if (this.number > this.userInfo.user_info.rank_points) {
-        Toast("兑换数量不能大于当前基金积贝总量");
+        Toast(this.APPNAME+"兑换数量不能大于当前基金积贝总量");
         this.number = this.userInfo.user_info.rank_points;
         return false;
       }
@@ -85,11 +85,11 @@ export default {
             this.show = true;
             this.getUserInfo();
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getUserInfo() {
@@ -98,11 +98,11 @@ export default {
           if (result.code == 0) {
             this.userInfo = result.data;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

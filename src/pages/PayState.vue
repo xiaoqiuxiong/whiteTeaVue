@@ -5,29 +5,14 @@
       <van-icon name="weapp-nav" slot="right"/>
     </van-nav-bar>
     <!-- 顶部状态 area -->
-    <div class="status-area">支付成功</div>
+    <div v-if="status" class="status-area">{{status}}</div>
+    <div v-if="!status" class="status-area">支付成功</div>
     <!-- 装饰 area -->
     <div class="line-area"></div>
     <!-- 内容 area -->
-    <!-- <div class="cont-area">
+    <div class="cont-area">
       <div>订单编号：{{order_sn}}</div>
-      <div v-if="alipay">
-        支付宝支付：
-        <span>¥{{info.total_amount}}</span>
-      </div>
-      <div v-if="wechat">
-        微信支付：
-        <span>¥{{wechat | moneyFilter}}</span>
-      </div>
-      <div v-if="coins">
-        积贝支付：
-        <span>{{coins | moneyFilter}}</span>
-      </div>
-      <div v-if="balance">
-        余额支付：
-        <span>¥{{balance | moneyFilter}}</span>
-      </div>
-    </div> -->
+    </div>
     <!-- 按钮 area -->
     <div class="btn-area">
       <van-button type="primary" round @click="$router.push({name: 'Home'})">回到首页</van-button>
@@ -48,29 +33,17 @@ export default {
     return {
       order_sn: "",
       status: "",
-      coins: false,
-      balance: false,
-      wechat: false,
-      alipay: true,
-      token: "",
       info: {}
     };
   },
   created() {
-    
-    if (this.$route.query.indexOf("alipay") != -1) {
+    if (JSON.stringify(this.$route.query).indexOf("alipay") != -1) {
       this.alipay = true;
+      this.order_sn
     }
-    if (!this.$route.query.order_sn || !this.$route.query.status) {
-      // this.$router.push({ name: "Home" });
-    }
-    this.info = this.getUrlParams(location.search)
-    this.order_sn = this.$route.query.order_sn;
+    this.info = this.getUrlParams(location.search);
+    this.order_sn = this.$route.query.order_sn || this.info.trade_no;
     this.status = this.$route.query.status;
-    this.coins = this.$route.query.coins || 0;
-    this.balance = this.$route.query.balance || 0;
-    this.wechat = this.$route.query.wechat || 0;
-    this.alipay = this.$route.query.alipay || 0;
   },
   methods: {
     getUrlParams(search) {
@@ -128,7 +101,7 @@ export default {
   div {
     padding: 4px 0;
     span {
-      font-size: 16px;
+      font-size: 14px;
       color: #ff6312;
     }
   }

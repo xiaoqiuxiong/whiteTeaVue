@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     study_fn(){
-      Toast('创业学习将会定期在线下举办，详情敬请关注！')
+      Toast(this.APPNAME+'创业学习将会定期在线下举办，详情敬请关注！')
     },
     getUserInfo() {
       apiUserIndex()
@@ -48,11 +48,11 @@ export default {
           if (response.code == 0) {
             this.userInfo = response.data;
           } else {
-            Toast(response.msg);
+            Toast(this.APPNAME+response.msg);
           }
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

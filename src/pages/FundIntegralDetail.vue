@@ -87,11 +87,11 @@ export default {
           if (response.code == 0) {
             this.userInfo = response.data;
           } else {
-            Toast(response, msg);
+            Toast(this.APPNAME+response, msg);
           }
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     onSearch() {
@@ -148,14 +148,14 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(response.msg);
+            Toast(this.APPNAME+response.msg);
           }
           this.loading = false;
           this.timer1 = null;
           this.timer2 = null;
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getMyTeam() {
@@ -166,11 +166,11 @@ export default {
           if (response.code == 0) {
             this.teamTatol = response.data.total;
           } else {
-            Toast(response.msg);
+            Toast(this.APPNAME+response.msg);
           }
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

@@ -110,4 +110,14 @@ export const apiBindUser = params => post('/apis/bindUser', JSON.stringify(param
 export const apiExchangeGoods = params => post('/apis/exchangeGoods', JSON.stringify(params) || {});
 //  微信登录
 export const apiWxLogin = params => post('/apis/wxLogin', JSON.stringify(params) || {});
+//  微信绑定手机号等信息
+export const apiBindWxAppVersion = params => post('/apis/bindWxAppVersion', JSON.stringify(params) || {});
+//  判断一个用户是否有资格领取面膜
+export const apiIsUserCanGetMask = params => post('/apis/isUserCanGetMask', JSON.stringify(params) || {});
+//  点击领取面膜
+export const apiGetMask = params => post('/apis/getMask', JSON.stringify(params) || {});
+//  面膜下单
+export const apiSureMaskOrder = params => post('/apis/sureMaskOrder', JSON.stringify(params) || {});
+//  上传评论
+export const apiSendComment = params => post('/apis/sendComment', JSON.stringify(params) || {});
 

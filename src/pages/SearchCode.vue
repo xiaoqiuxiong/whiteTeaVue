@@ -66,11 +66,11 @@ export default {
           if (result.code == 0) {
             this.list = result.data;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     onSearch(val) {

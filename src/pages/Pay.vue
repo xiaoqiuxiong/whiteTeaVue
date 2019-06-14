@@ -9,8 +9,8 @@
     <div class="J-weixin-tip-img weixin-tip-img"></div>
   </div>
 </template>
-
 <script>
+import "@/assets/js/ap.js";
 export default {
   mounted() {
     if (location.hash.indexOf("error") != -1) {
@@ -37,7 +37,7 @@ export default {
           if (reg.test(url)) return RegExp.$2.replace(/\+/g, " ");
         };
         var param = getQueryString(location.href, "goto") || "";
-        location.href = param != "" ? _AP.decode(param) : "#/pay#error";
+        this.$router.push(param != "" ? _AP.decode(param) : "/pay#error");
       }
     }
   }

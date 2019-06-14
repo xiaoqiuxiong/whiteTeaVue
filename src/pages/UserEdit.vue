@@ -104,7 +104,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     onSelectSex(val) {
@@ -128,7 +128,7 @@ export default {
       let params = {};
       if (type == "user_name") {
         if (!regu.test(this.userInfo.user_name)) {
-          Toast("请输入4-20个字符");
+          Toast(this.APPNAME+"请输入4-20个字符");
           return false;
         }
       }
@@ -153,7 +153,7 @@ export default {
           this.showSex = false;
         })
         .catch(err => {
-          Toast.fail("修改信息失败，请刷新重试");
+          Toast(this.APPNAME+"修改信息失败，请刷新重试");
         });
     },
     dateToString(date) {
@@ -181,7 +181,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast.fail("上传头像失败，请刷新重试");
+          Toast(this.APPNAME+"上传头像失败，请刷新重试");
         });
     },
     actionHeadimg() {
@@ -200,15 +200,15 @@ export default {
                 this.file = "";
                 this.param = new FormData();
               } else {
-                Toast.error(result.msg);
+                Toast(this.APPNAME+result.msg);
               }
             })
             .catch(err => {
-              Toast.fail("上传头像失败，请刷新重试");
+              Toast(this.APPNAME+"上传头像失败，请刷新重试");
             });
         })
         .catch(error => {
-          Toast.fail("上传头像失败，请刷新重试");
+          Toast(this.APPNAME+"上传头像失败，请刷新重试");
         });
     },
     onRead(file) {

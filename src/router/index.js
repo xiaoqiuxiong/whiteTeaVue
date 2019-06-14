@@ -43,12 +43,13 @@ import SearchList from '@/pages/SearchList';
 import InviteFriends from '@/pages/InviteFriends';
 import BindFriends from '@/pages/BindFriends';
 import ExchangeGoods from '@/pages/ExchangeGoods';
-
+import InviteToGetGift from '@/pages/InviteToGetGift';
+import PostComment from '@/pages/PostComment';
 
 Vue.use(Router)
 
 let router = new Router({
-  // mode: 'history',
+  mode: 'history',
   routes: [{
       path: '/',
       name: 'Main',
@@ -107,7 +108,7 @@ let router = new Router({
       component: Login
     },
     {
-      path: '/bindBhone',
+      path: '/bindPhone',
       name: 'BindPhone',
       meta: {
         title: '绑定手机'
@@ -402,6 +403,22 @@ let router = new Router({
       },
       component: ExchangeGoods
     },
+    {
+      path: '/inviteToGetGift',
+      name: 'InviteToGetGift',
+      meta: {
+        title: '邀请有礼'
+      },
+      component: InviteToGetGift
+    },
+    {
+      path: '/postComment',
+      name: 'PostComment',
+      meta: {
+        title: '发布评论'
+      },
+      component: PostComment
+    },
     
   ]
 })
@@ -409,7 +426,20 @@ let router = new Router({
 // 导航守卫
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
 router.beforeEach((to, from, next) => {
-  if (to.name === 'Login' || to.name === 'Register' || to.name === 'Home' || to.name === 'Goods' || to.name === 'Comment' || to.name === 'FindPwd'|| to.name === 'SearchCode'|| to.name === 'SearchList') {
+  if (
+    to.name === 'BindPhone' ||
+    to.name === 'Login' ||
+    to.name === 'Register' ||
+    to.name === 'Home' ||
+    to.name === 'Goods' ||
+    to.name === 'Comment' ||
+    to.name === 'FindPwd' ||
+    to.name === 'SearchCode' ||
+    to.name === 'RegisterRule' ||
+    to.name === 'InviteToGetGift' ||
+    to.name === 'SearchList'
+    
+    ) {
     next();
   } else {
     let token = localStorage.getItem('token');

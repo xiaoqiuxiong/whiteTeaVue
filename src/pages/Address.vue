@@ -8,11 +8,50 @@
       @click-left="returnPrePage"
     />
     <!-- 地址列表 -->
-    <div class="address-list">
-      <div class="address-item" v-for="(item, index) in list" :key="index" >
+    <div class="no-list" v-if="!list.length">亲，没有收货地址信息无法购物哦</div>
+    <div v-if="list.length" class="address-list">
+      <div class="address-item" v-for="(item, index) in list" :key="index">
         <van-swipe-cell :right-width="160">
           <van-cell-group>
-            <div class="item-cont" @click="skipAddress(item.address_id)">
+            <div v-if="!isSureOrder" class="item-cont" @click="skipAddress(item.address_id)">
+              <div class="left">
+                <div class="top">
+                  {{item.consignee}}&nbsp;&nbsp;&nbsp;{{item.mobile}}
+                  <van-image
+                    v-if="item.default_address == 1"
+                    width="1.2rem"
+                    height="0.5rem"
+                    :src="defaultAddress"
+                  />
+                </div>
+                <div class="bottom" >
+                  {{
+                  allAddress.province.filter(item1 => {
+                  return (item1.region_id == item.province);
+                  })[0].region_name
+                  }}
+                  {{
+                  allAddress.citys.filter(item1 => {
+                  return (item1.region_id == item.city);
+                  })[0].region_name
+                  }}
+                  {{
+                  allAddress.district.filter(item1 => {
+                  return (item1.region_id == item.district);
+                  })[0].region_name
+                  }}
+                  {{item.address}}
+                </div>
+              </div>
+              <div class="right">
+                <van-icon name="edit" size="20"/>
+              </div>
+            </div>
+            <div
+              v-if="isSureOrder"
+              class="item-cont"
+              @click="$router.push({path: `${fullPath}&address_id=${item.address_id}`})"
+            >
               <div class="left">
                 <div class="top">
                   {{item.consignee}}&nbsp;&nbsp;&nbsp;{{item.mobile}}
@@ -70,12 +109,21 @@ import {
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
+let isSureOrder1 = false;
+let fullPath1 = "";
 export default {
   data() {
     return {
       list: [],
-      defaultAddress: require("@/assets/images/default_address.png")
+      defaultAddress: require("@/assets/images/default_address.png"),
+      isSureOrder: false,
+      fullPath: ""
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    isSureOrder1 = from.name == "SureOrder";
+    fullPath1 = from.fullPath;
+    next();
   },
   created() {
     apiUserAddress()
@@ -83,17 +131,40 @@ export default {
         if (result.code == 0) {
           this.list = JSON.parse(crypto.decrypt(result.data));
         } else {
-          Toast(result.msg);
+          Toast(this.APPNAME+result.msg);
         }
       })
       .catch(err => {
-        Toast("网络故障，请刷新重试");
+        Toast(this.APPNAME+"网络故障，请刷新重试");
       });
   },
-
+  mounted() {
+    this.isSureOrder = isSureOrder1;
+    this.fullPath = fullPath1;
+    if (this.fullPath.indexOf("&") == -1) {
+      return false;
+    }
+    if (this.fullPath.indexOf("type") == -1) {
+      this.fullPath = this.fullPath.substring(0, this.fullPath.indexOf("&"));
+    } else {
+      if (this.fullPath.indexOf("address_id") != -1) {
+        this.fullPath = this.fullPath.substring(
+          0,
+          this.find(this.fullPath, "&", 1)
+        );
+      }
+    }
+  },
   methods: {
-    skipAddress(id){
-      this.$router.push({name: 'AddressEdit',query: {address_id: id}})
+    find(str, cha, num) {
+      var x = str.indexOf(cha);
+      for (var i = 0; i < num; i++) {
+        x = str.indexOf(cha, x + 1);
+      }
+      return x;
+    },
+    skipAddress(id) {
+      this.$router.push({ name: "AddressEdit", query: { address_id: id } });
     },
     setDefault(id) {
       apiSetDefaultAddress({
@@ -105,7 +176,7 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast.success("默认收货地址设置成功");
+            Toast.success(this.APPNAME+"默认收货地址设置成功");
             this.list.filter((item, index) => {
               this.list[index].default_address = 0;
               if (item.address_id == id) {
@@ -113,11 +184,11 @@ export default {
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     del(id) {
@@ -130,26 +201,26 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast.success("删除收货地址成功");
+            Toast(this.APPNAME+"删除收货地址成功");
             this.list.filter((item, index) => {
               if (item.address_id == id) {
-                this.list.splice(index,1);
+                this.list.splice(index, 1);
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast("网络故障，请刷新重试");
+          Toast(this.APPNAME+"网络故障，请刷新重试");
         });
     },
     onAdd() {
-      Toast("新增地址");
+      Toast(this.APPNAME+"新增地址");
     },
 
     onEdit(item, index) {
-      Toast("编辑地址:" + index);
+      Toast(this.APPNAME+"编辑地址:" + index);
     }
   },
   computed: {
@@ -223,5 +294,10 @@ export default {
 }
 .address-list {
   padding-bottom: 70px;
+}
+.no-list {
+  margin-top: 20px;
+  text-align: center;
+  color: #666;
 }
 </style>

@@ -26,6 +26,9 @@ export default {
 </script>
 
 <style lang="less">
+#pay_form{
+  display: none;
+}
 .qrcode-img{
   img{
     width: 134px;

@@ -6,15 +6,7 @@ import router from "@/router";
 import {
   Toast
 } from 'vant';
-// // 环境的切换
-// if (process.env.NODE_ENV == 'development') {
-//   axios.defaults.baseURL = 'apis/';
-// } else if (process.env.NODE_ENV == 'debug') {
-//   axios.defaults.baseURL = 'apis/';
-// } else if (process.env.NODE_ENV == 'production') {
-//   axios.defaults.baseURL = 'apis/';
-// }
-axios.defaults.timeout = 3000;
+axios.defaults.timeout = 5000;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 let toastLoading;
 // 拦截请求
@@ -22,8 +14,8 @@ let toastLoading;
 axios.interceptors.request.use(
   config => {
     toastLoading = Toast.loading({
-      mask: true,
-      message: '加载中...'
+      // mask: true,
+      message:'加载中...'
     });
     if (store.state.token) {
       config.headers.Authorization = store.state.token;
@@ -42,6 +34,7 @@ axios.interceptors.response.use(
       router.replace({
         name: 'Login'
       })
+      response.data.msg = '亲，需要登录才可以购物哦'
     }
     return response
   },
@@ -92,7 +85,7 @@ export function post(url, params) {
         resolve(res.data);
       })
       .catch(err => {
-        Toast('网络故障,请稍后刷新重试')
+        Toast('共信新零售：网络故障,请稍后刷新重试')
         reject(err.data)
       })
   });

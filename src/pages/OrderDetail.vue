@@ -39,7 +39,7 @@
       <div class="right">
         <van-icon name="arrow" size="18"/>
       </div>
-    </router-link> -->
+    </router-link>-->
     <!-- 装饰线 area -->
     <div class="line-area"></div>
     <!-- 商品 area -->
@@ -63,9 +63,10 @@
       <!-- 订单信息 area -->
       <div class="order-tip-area">
         <van-cell
+          v-if="orderInfo.order.order_info.postscript!=''"
           title="订单备注："
           :icon="remarkIcon"
-          :value="orderInfo.order.order_info.card_message"
+          :value="orderInfo.order.order_info.postscript"
         />
         <van-cell
           v-if="orderInfo.order.order_info.coins"
@@ -80,7 +81,7 @@
         <van-cell
           class="realy-pay"
           title="实际付款"
-        >¥{{orderInfo.order.order_info.total_fee | moneyFilter}}</van-cell>
+        >¥{{orderInfo.order.order_info.real_pay | moneyFilter}}</van-cell>
       </div>
     </div>
     <!-- 支付方式 area -->
@@ -118,7 +119,8 @@
       </div>
     </div>
     <div class="bottom-tip-area"></div>
-    <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 0">
+   
+    <div class="bottom-box-area" v-if="orderStatus == 1">
       <van-button
         class="cancal-btn"
         size="small"
@@ -128,7 +130,7 @@
       >取消订单</van-button>
       <van-button class="primary-btn" size="small" round plain @click="pay">立即支付</van-button>
     </div>
-    <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 1">
+    <div class="bottom-box-area" v-if="orderStatus == 2">
       <van-button class="cancal-btn" size="small" round plain @click="remindDelivery">提醒发货</van-button>
       <van-button
         class="primary-btn"
@@ -138,7 +140,7 @@
         @click="$router.push({name: 'Home'})"
       >再来一单</van-button>
     </div>
-    <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 2">
+    <div class="bottom-box-area" v-if="orderStatus == 3">
       <van-button
         class="cancal-btn"
         size="small"
@@ -154,7 +156,7 @@
         @click="takeGoods(orderInfo.order.order_info.order_id)"
       >确认收货</van-button>
     </div>
-    <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 3">
+    <!-- <div class="bottom-box-area" v-if="orderStatus == 4">
       <van-button
         class="primary-btn"
         size="small"
@@ -162,8 +164,15 @@
         plain
         @click="$router.push({name: 'Home'})"
       >再来一单</van-button>
-    </div>
-    <div class="bottom-box-area" v-if="orderInfo.order.order_info.order_status == 5">
+    </div> -->
+    <div class="bottom-box-area" v-if="orderStatus == 4">
+      <van-button
+        class="primary-btn"
+        size="small"
+        round
+        plain
+        @click="$router.push({name: 'Home'})"
+      >再来一单</van-button>
       <van-button class="primary-btn" size="small" round plain @click="commentfn">立即评价</van-button>
     </div>
     <form class="alipayForm" id="pay_form" ref="form" action="alipay/gateway.do" method="post">
@@ -219,16 +228,19 @@ export default {
       open_id: "",
       datastr: "",
       signatureStr: "",
-      signature: ""
+      signature: "",
+      orderStatus: -1
     };
   },
   created() {
     // 获取传过来的order_id,如果没有重定向到首页
     const orderidData = this.$route.query.order_id || null;
-    if (!orderidData) {
+    this.orderStatus = this.$route.query.status || null;
+    if (!orderidData || !this.orderStatus) {
       this.$router.replace({ name: "Home" });
       return false;
     }
+    this.orderStatus = parseFloat(this.orderStatus)
     // 检查订单
     this.actionCheckOrder(Number(orderidData));
     if (this.isWeiXin) {
@@ -237,19 +249,22 @@ export default {
     }
   },
   methods: {
-    commentfn(){
-      Toast('评论功能正在开发中')
+    commentfn() {
+      this.$router.push({
+        name: "PostComment",
+        query: { order_id: this.orderInfo.order.order_info.order_id }
+      });
     },
     copy() {
       let clipboard = new Clipboard(".tag-read");
       clipboard.on("success", e => {
-        Toast("复制成功");
+        Toast(this.APPNAME+"复制成功");
         // 释放内存
         clipboard.destroy();
       });
       clipboard.on("error", e => {
         // 不支持复制
-        Toast("该浏览器不支持自动复制");
+        Toast(this.APPNAME+"该浏览器不支持自动复制");
         // 释放内存
         clipboard.destroy();
       });
@@ -289,12 +304,12 @@ export default {
                 };
                 this.wexinPay();
               } else {
-                Toast(result.msg);
+                Toast(this.APPNAME+result.msg);
               }
             })
             .catch(err => {});
         } else {
-          Toast("微信支付需要在微信浏览器上操作哦");
+          Toast(this.APPNAME+"微信支付需要在微信浏览器上操作哦");
         }
         // 微信支付
       } else if (this.orderInfo.order.order_info.pay_id == 1) {
@@ -364,7 +379,7 @@ export default {
                 }, 500);
               }
             } else {
-              Toast(result.msg);
+              Toast(this.APPNAME+result.msg);
             }
           })
           .catch(err => {});
@@ -415,7 +430,7 @@ export default {
       this.signature = sha1(this.signatureStr);
       let signature = this.signature;
       wx.config({
-        debug: true,
+        debug: false,
         appId: wechatData.appId,
         timestamp: wechatData.timeStamp,
         nonceStr: wechatData.nonceStr,
@@ -451,11 +466,11 @@ export default {
             result = JSON.parse(crypto.decrypt(result.data));
             this.jsapi_ticket = result;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getGetWebAccessToken() {
@@ -468,11 +483,11 @@ export default {
             this.open_id = result.openid;
             this.access_token = result.access_token;
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     },
     getUrlParams(search) {
@@ -507,18 +522,22 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast("已经确认收货");
-            this.list.filter((e, i) => {
-              if (e.order_id == order_id) {
-                this.list[i].order_final_status = 4;
+            Toast({
+              type: "success",
+              message: "确认收货成功",
+              duration: 1500,
+              onClose: () => {
+                this.$router.push({
+                  name: "Orders"
+                });
               }
             });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME+result.msg);
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
       return false;
     },
@@ -538,14 +557,14 @@ export default {
           })
             .then(result => {
               if (result.code == 0) {
-                Toast("已经取消订单");
+                Toast(this.APPNAME+"已经取消订单");
                 this.$router.push({ name: "Orders" });
               } else {
-                Toast(result.msg);
+                Toast(this.APPNAME+result.msg);
               }
             })
             .catch(err => {
-              Toast(this.ERRORNETWORK);
+              Toast(this.APPNAME+this.ERRORNETWORK);
             });
         })
         .catch(() => {
@@ -553,7 +572,7 @@ export default {
         });
     },
     remindDelivery() {
-      Toast("已经提醒工作人员尽快安排发货，请耐心等待");
+      Toast(this.APPNAME+"已经提醒工作人员尽快安排发货，请耐心等待");
     },
     actionCheckOrder(order_id) {
       apiWatchOrder({
@@ -567,7 +586,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
         });
     }
   }

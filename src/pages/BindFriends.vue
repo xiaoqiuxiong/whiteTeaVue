@@ -45,7 +45,7 @@ export default {
         } else {
           Toast({
             mask: true,
-            message: result.msg,
+            message: this.APPNAME+result.msg,
             onClose: () => {
               this.$router.replace({ name: "Home" });
             }
@@ -55,7 +55,7 @@ export default {
       .catch(err => {
         Toast({
           mask: true,
-          message: this.ERRORNETWORK,
+          message: this.APPNAME+this.ERRORNETWORK,
           onClose: () => {
             this.$router.replace({ name: "Home" });
           }

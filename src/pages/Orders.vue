@@ -31,7 +31,7 @@
         @load="onLoad"
       >
         <router-link
-          :to="{name: 'OrderDetail',query:{order_id:item.order_id}}"
+          :to="{name: 'OrderDetail',query:{order_id:item.order_id,status: item.order_final_status}}"
           class="item"
           v-for="(item, index) in list"
           :key="index"
@@ -168,65 +168,6 @@ export default {
         query: { order_id: order_id }
       });
     },
-    takeGoods(order_id) {
-      apiConfirmOrder({
-        data: crypto.encrypt(
-          JSON.stringify({
-            order_id: order_id
-          })
-        )
-      })
-        .then(result => {
-          if (result.code == 0) {
-            Toast("已经确认收货");
-            this.list.filter((e, i) => {
-              if (e.order_id == order_id) {
-                this.list[i].order_final_status = 4;
-              }
-            });
-          } else {
-            Toast(result.msg);
-          }
-        })
-        .catch(err => {
-          Toast(this.ERRORNETWORK);
-        });
-      return false;
-    },
-    del(order_id) {
-      Dialog.confirm({
-        closeOnClickOverlay: true,
-        message: "您确认取消该订单？"
-      })
-        .then(() => {
-          // on confirm
-          apiCancelOrder({
-            data: crypto.encrypt(
-              JSON.stringify({
-                order_id: order_id
-              })
-            )
-          })
-            .then(result => {
-              if (result.code == 0) {
-                Toast("已经取消订单");
-                this.list.filter((e, i) => {
-                  if (e.order_id == order_id) {
-                    this.list.splice(i, 1);
-                  }
-                });
-              } else {
-                Toast(result.msg);
-              }
-            })
-            .catch(err => {
-              Toast(this.ERRORNETWORK);
-            });
-        })
-        .catch(() => {
-          Toast(this.ERRORNETWORK);
-        });
-    },
     changeTab(req_type) {
       this.commentTabActive = req_type;
       this.tabs.filter((e, index) => {
@@ -277,7 +218,7 @@ export default {
           this.timer2 = null;
         })
         .catch(error => {
-          Toast(this.ERRORNETWORK);
+          Toast(this.APPNAME+this.ERRORNETWORK);
           this.loading = false;
           this.timer2 = null;
         });

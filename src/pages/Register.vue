@@ -26,7 +26,6 @@
               clearable
               label="手机号码"
               placeholder="请输入手机号码"
-              :error-message="phoneError"
             />
             <van-field
               v-model="password"
@@ -35,7 +34,6 @@
               placeholder="请输入登录密码"
               :right-icon="passwordEye"
               @click-right-icon="passwordEyeFn"
-              :error-message="passwordError"
             />
             <van-field
               v-model="resPassword"
@@ -44,17 +42,9 @@
               placeholder="请再次输入密码"
               :right-icon="resPasswordEye"
               @click-right-icon="resPasswordEyeFn"
-              :error-message="resPasswordError"
             />
             <van-cell-group>
-              <van-field
-                v-model="sms"
-                center
-                clearable
-                label="手机验证码"
-                placeholder="请输入手机验证码"
-                :error-message="smsError"
-              >
+              <van-field v-model="sms" center clearable label="手机验证码" placeholder="请输入手机验证码">
                 <van-button
                   slot="button"
                   size="small"
@@ -72,7 +62,7 @@
             <div class="van-cell user-agreement">
               <van-checkbox v-model="checked">
                 我已看过并接受
-                <span @click="showUserAgreementFn">《用户协议》</span>
+                <span @click.stop="showUserAgreementFn">《用户协议》</span>
                 <img
                   slot="icon"
                   slot-scope="props"
@@ -100,22 +90,18 @@ export default {
     return {
       active: 0,
       phone: "",
-      phoneError: "",
       password: "",
-      passwordError: "",
       passwordEye: "closed-eye",
       passwordEyeType: "password",
       resPassword: "",
-      resPasswordError: "",
       resPasswordEye: "closed-eye",
       resPasswordEyeType: "password",
       isPhoneOk: false,
       sms: "",
-      isSms: false,
+      isSms: true,
       smsBtnTxt: "获取验证码",
       seconds: 60,
-      smsError: "",
-      checked: false,
+      checked: true,
       icon: {
         normal: require("../assets/images/icon-normal.png"),
         active: require("../assets/images/icon-active.png")
@@ -136,7 +122,7 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast("手机验证码已经发送，请注意查收");
+            Toast(this.APPNAME + "手机验证码已经发送，请注意查收");
             this.isSms = false;
             let timer;
             timer = window.setInterval(() => {
@@ -150,11 +136,11 @@ export default {
               }
             }, 1000);
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME + result.msg);
           }
         })
         .catch(err => {
-          Toast("数据请求失败");
+          Toast(this.APPNAME + "数据请求失败");
         });
     },
     // 检测手机号码是否已经被注册
@@ -169,68 +155,57 @@ export default {
         })
           .then(result => {
             if (result.code == 0) {
-              this.phoneError = "手机号码已经被注册";
+              Toast(this.APPNAME + "手机号码已经注册");
               this.isPhoneOk = false;
               this.isSms = false;
             } else if (result.code == 3122) {
+              Toast(this.APPNAME + "手机号码可用");
               this.isPhoneOk = true;
               this.isSms = true;
             }
           })
           .catch(err => {
-            Toast("数据请求失败");
+            Toast(this.APPNAME + "数据请求失败");
           });
-      } else {
-        this.phoneError = "";
       }
     },
     // 注册数据判断
     actionRegister() {
-      // 数据判断
-      let isTrue = true;
       // 手机号码
       if (this.phone.length == 0) {
-        isTrue = false;
-        this.phoneError = "请输入手机号码";
+        Toast(this.APPNAME + "请输入手机号码");
+        return false;
       } else if (this.phone.length != 11) {
-        isTrue = false;
-        this.phoneError = "请输入正确的手机号码";
-      } else {
-        this.phoneError = "";
+        Toast(this.APPNAME + "请输入正确的手机号码");
+        return false;
       }
       // 密码
       if (this.password.length == "") {
-        isTrue = false;
-        this.passwordError = "请输入登录密码";
+        Toast(this.APPNAME + "请输入登录密码");
+        return false;
       } else if (this.password.length < 6 || this.password.length > 20) {
-        isTrue = false;
-        this.passwordError = "登录密码不能少于 6位/密码不能超过20位";
-      } else {
-        this.passwordError = "";
+        Toast(this.APPNAME + "登录密码不能少于6位/密码不能超过20位");
+        return false;
       }
       // 重复密码
       if (this.resPassword.length == "") {
-        isTrue = false;
-        this.resPasswordError = "请重复输入登录密码";
+        Toast(this.APPNAME + "请重复输入登录密码");
+        return false;
       } else if (this.password !== this.resPassword) {
-        isTrue = false;
-        this.resPasswordError = "两次输入登录密码不一致";
-      } else {
-        this.resPasswordError = "";
+        Toast(this.APPNAME + "两次输入登录密码不一致");
+        return false;
       }
       // 验证码
       if (this.sms.length == "") {
-        isTrue = false;
-        this.smsError = "请输入手机验证码";
-      } else {
-        this.smsError = "";
+        Toast(this.APPNAME + "请输入手机验证码");
+        return false;
       }
       // 用户协议
       if (!this.checked) {
-        isTrue = false;
-        Toast("请仔细阅读用户协议，并勾选");
+        Toast(this.APPNAME + "请仔细阅读用户协议，并勾选");
+        return false;
       }
-      if (isTrue) this.actionRegisterAxios();
+      this.actionRegisterAxios();
     },
     // 注册数据提交
     actionRegisterAxios() {
@@ -249,30 +224,21 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            this.$store.commit("setToken", result.data.token);
-            const toast = Toast.loading({
-              duration: 0, // 持续展示 toast
-              forbidClick: true, // 禁用背景点击
-              loadingType: "spinner",
-              message: "注册成功，3 秒后自动跳到首页"
-            });
-
-            let second = 3;
-            const timer = setInterval(() => {
-              second--;
-              if (second) {
-                toast.message = `注册成功， ${second} 秒后自动跳到首页`;
-              } else {
-                clearInterval(timer);
-                Toast.clear();
+            Toast({
+              type: "success",
+              message: "注册成功",
+              mask: true,
+              duration: 1500,
+              onClose: () => {
+                this.$router.replace({ name: "Login" });
               }
-            }, 1000);
+            });
           } else {
-            Toast(result.msg);
+            Toast(this.APPNAME + result.msg);
           }
         })
         .catch(err => {
-          Toast("数据请求失败");
+          Toast(this.APPNAME + "数据请求失败");
         });
     },
     onClick(index, title) {
@@ -304,9 +270,7 @@ export default {
       }
     },
     showUserAgreementFn(e) {
-      this.$router.push({name: 'RegisterRule'})
-      // 阻止事件冒泡
-      e.stopPropagation();
+      this.$router.push({ name: "RegisterRule" });
     }
   }
 };
@@ -315,7 +279,7 @@ export default {
 
 <style lang="less" scope>
 .register {
-  height: 100%;
+  height: 100vh;
   background-image: url("../assets/images/register_bg.png");
   background-repeat: no-repeat;
   background-size: contain;
