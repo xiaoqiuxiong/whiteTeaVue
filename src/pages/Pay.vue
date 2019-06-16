@@ -11,10 +11,11 @@
 </template>
 <script>
 import "@/assets/js/ap.js";
+import { Toast } from "vant";
 export default {
   mounted() {
     if (location.hash.indexOf("error") != -1) {
-      alert("参数错误，请检查");
+      this.$toast("参数错误，请检查");
     } else {
       var ua = navigator.userAgent.toLowerCase();
       var tip = document.querySelector(".weixin-tip");
@@ -37,7 +38,7 @@ export default {
           if (reg.test(url)) return RegExp.$2.replace(/\+/g, " ");
         };
         var param = getQueryString(location.href, "goto") || "";
-        this.$router.push(param != "" ? _AP.decode(param) : "/pay#error");
+        location.href = param != '' ? _AP.decode(param) : 'pay#error';
       }
     }
   }

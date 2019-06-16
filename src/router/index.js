@@ -435,8 +435,10 @@ router.beforeEach((to, from, next) => {
     to.name === 'Comment' ||
     to.name === 'FindPwd' ||
     to.name === 'SearchCode' ||
+    to.name === 'SearchList' ||
     to.name === 'RegisterRule' ||
     to.name === 'InviteToGetGift' ||
+    to.name === 'Pay' ||
     to.name === 'SearchList'
     
     ) {

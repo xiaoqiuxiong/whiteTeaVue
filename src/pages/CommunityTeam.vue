@@ -25,36 +25,34 @@
     <div class="van-hairline--bottom"></div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
-        >
-          <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="left-box">
-              <van-image
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <div class="item" v-for="(item, index) in list" :key="index">
+          <div class="left-box">
+            <van-image
               class="awtar-img"
-                fit="cover"
-                lazy-load
-                src="https://img.yzcdn.cn/vant/cat.jpeg"
-              />
+              fit="cover"
+              lazy-load
+              src="https://img.yzcdn.cn/vant/cat.jpeg"
+            />
+          </div>
+          <div class="right-box">
+            <div class="top">
+              <div class="left">昵称：{{item.user_name }}</div>
+              <div class="right">绑定时间</div>
             </div>
-            <div class="right-box">
-              <div class="top">
-                <div class="left">昵称：{{item.user_name }}</div>
-                <div class="right">绑定时间</div>
-              </div>
-              <div class="bottom">
-                <div class="left">账号：{{item.mobile_phone}}</div>
-                <div class="right">{{item.binding_time | timeFilter}}</div>
-              </div>
+            <div class="bottom">
+              <div class="left">账号：{{item.mobile_phone}}</div>
+              <div class="right">{{item.binding_time | timeFilter}}</div>
             </div>
           </div>
-        </van-list>
-      </van-pull-refresh>
+        </div>
+      </van-list>
     </div>
   </div>
 </template>
@@ -70,8 +68,8 @@ export default {
       loading: false,
       finished: false,
       page_num: 0,
-      total: 1,
-      level_1: 1,
+      total: 0,
+      level_1: 0,
       level_2: 0,
       isRefresh: false,
       timer: null
@@ -87,19 +85,13 @@ export default {
       this.page_num = 0;
       this.timer = null;
     },
-    onRefresh() {
+    onLoad() {
+      this.loading = true;
       if (!this.timer) {
         this.timer = setTimeout(() => {
-          this.isRefresh = false;
-          this.finished = false;
-          this.list = [];
-          this.page_num = 0;
-          this.timer = null;
-        }, 1000);
+          this.getMyTeam();
+        }, 500);
       }
-    },
-    onLoad() {
-      this.getMyTeam();
     },
     getMyTeam() {
       apiMyTeam({
@@ -119,9 +111,6 @@ export default {
             if (response.infos.length) {
               this.page_num++;
               this.list = this.list.concat(response.infos);
-              if (response.infos.length < 10) {
-                this.finished = true;
-              }
             } else {
               this.finished = true;
             }
@@ -129,9 +118,12 @@ export default {
             this.finished = true;
           }
           this.loading = false;
+          this.timer = null;
         })
         .catch(error => {
-          console.log(error);
+          this.$toast(this.ERRORNETWORK);
+          this.loading = false;
+          this.timer = null;
         });
     }
   }
@@ -166,16 +158,16 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    .left-box{
+    .left-box {
       padding-right: 10px;
     }
-    .right-box{
+    .right-box {
       flex: 1;
     }
     .top {
       display: flex;
       justify-content: space-between;
-      .right{
+      .right {
         color: #666;
       }
     }
@@ -183,16 +175,16 @@ export default {
       padding-top: 4px;
       display: flex;
       justify-content: space-between;
-      .right{
+      .right {
         color: #666;
       }
     }
   }
-  .awtar-img{
+  .awtar-img {
     height: 34px;
     width: 34px;
     border-radius: 50%;
-    overflow: hidden; 
+    overflow: hidden;
   }
 }
 </style>

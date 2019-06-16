@@ -31,27 +31,25 @@
     </div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
-        >
-          <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="top">
-              <div class="left">{{item.order_sn}}</div>
-              <div class="right">{{item.time | timeFilter}}</div>
-            </div>
-            <div class="bottom">
-              <div class="left">{{item.desc}}</div>
-              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
-              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
-            </div>
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <div class="item" v-for="(item, index) in list" :key="index">
+          <div class="top">
+            <div class="left">{{item.order_sn}}</div>
+            <div class="right">{{item.time | timeFilter}}</div>
           </div>
-        </van-list>
-      </van-pull-refresh>
+          <div class="bottom">
+            <div class="left">{{item.desc}}</div>
+            <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+            <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
+          </div>
+        </div>
+      </van-list>
     </div>
   </div>
 </template>
@@ -71,58 +69,50 @@ export default {
       finished: false,
       page_num: 0,
       teamTatol: 0,
-      isRefresh: false,
       userInfo: {},
-      timer1: null,
-      timer2: null
+      timer: null,
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getUserInfo();
   },
   methods: {
-    getUserInfo() {
-      apiUserIndex()
-        .then(response => {
-          if (response.code == 0) {
-            this.userInfo = response.data;
-          } else {
-            Toast(this.APPNAME+response, msg);
-          }
-        })
-        .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
-        });
-    },
     onSearch() {
-      this.isRefresh = false;
       this.finished = false;
       this.list = [];
       this.page_num = 0;
-      this.timer1 = null;
-      this.timer2 = null;
+      this.timer = null;
       this.onLoad();
+    },
+    getUserInfo() {
+      apiUserIndex()
+        .then(response => {
+          this.loadingMsg.clear();
+          if (response.code == 0) {
+            this.userInfo = response.data;
+          } else {
+            this.$toast(response, msg);
+          }
+        })
+        .catch(error => {
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
+        });
     },
     onCancel() {
       this.searchShow = false;
     },
-    onRefresh() {
-      if (!this.timer1) {
-        this.timer1 = setTimeout(() => {
-          this.isRefresh = false;
-          this.finished = false;
-          this.list = [];
-          this.page_num = 0;
-          this.timer1 = null;
-          this.timer2 = null;
-          this.onLoad();
-        }, 500);
-      }
-    },
     onLoad() {
       this.loading = true;
-      if (!this.timer2) {
-        this.timer2 = setTimeout(() => {
+      if (!this.timer) {
+        this.timer = setTimeout(() => {
           this.getApiUserJiJin();
         }, 500);
       }
@@ -148,14 +138,14 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(this.APPNAME+response.msg);
           }
           this.loading = false;
-          this.timer1 = null;
-          this.timer2 = null;
+          this.timer = null;
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loading = false;
+          this.timer = null;
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getMyTeam() {
@@ -166,11 +156,11 @@ export default {
           if (response.code == 0) {
             this.teamTatol = response.data.total;
           } else {
-            Toast(this.APPNAME+response.msg);
+            this.$toast(response.msg);
           }
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

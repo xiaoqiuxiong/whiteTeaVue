@@ -18,8 +18,16 @@
     <!-- doList-area -->
     <div class="doList-area" v-if="userInfo.user_info">
       <div @click="study_fn" class="item item0"></div>
-      <router-link v-if="userInfo.user_info.is_hehuo != 1" :to="{name: 'ConversionCash'}" class="item item1"></router-link>
-      <router-link v-if="userInfo.user_info.is_hehuo == 1" :to="{name: 'ConversionCash'}" class="item item2"></router-link>
+      <router-link
+        v-if="userInfo.user_info.is_hehuo != 1"
+        :to="{name: 'ConversionCash'}"
+        class="item item1"
+      ></router-link>
+      <router-link
+        v-if="userInfo.user_info.is_hehuo == 1"
+        :to="{name: 'ConversionCash'}"
+        class="item item2"
+      ></router-link>
       <router-link :to="{name: 'ConversionIntegral'}" class="item item3"></router-link>
     </div>
   </div>
@@ -32,27 +40,36 @@ import { Toast } from "vant";
 export default {
   data() {
     return {
-      userInfo: {}
+      userInfo: {},
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getUserInfo();
   },
   methods: {
-    study_fn(){
-      Toast(this.APPNAME+'创业学习将会定期在线下举办，详情敬请关注！')
+    study_fn() {
+      this.$toast("创业学习将会定期在线下举办，详情敬请关注！");
     },
     getUserInfo() {
       apiUserIndex()
         .then(response => {
+          this.loadingMsg.clear();
           if (response.code == 0) {
             this.userInfo = response.data;
           } else {
-            Toast(this.APPNAME+response.msg);
+            this.$toast(response.msg);
           }
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }
@@ -78,7 +95,7 @@ export default {
     &:first-child {
       margin-right: 160px;
     }
-    &.item0{
+    &.item0 {
       background-image: url(../assets/images/fundIntegral01.png);
     }
     &.item1 {
@@ -103,7 +120,7 @@ export default {
     color: #ff7612;
   }
 }
-.van-nav-bar__text{
+.van-nav-bar__text {
   color: #333;
 }
 </style>

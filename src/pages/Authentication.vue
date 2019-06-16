@@ -99,25 +99,25 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast(this.ERRORNETWORK);
         });
     },
     actionData() {
       // 判断数据
       if (!/^[\u4e00-\u9fa5]+$/.test(this.real_name)) {
-        Toast(this.APPNAME+"请正确输入正式姓名");
+        this.$toast("请正确输入正式姓名");
         return false;
       }
       if (!/^[0-9a-zA-Z]+$/.test(this.id_card) || this.id_card.length != 18) {
-        Toast(this.APPNAME+"请正确输入身份证号码");
+        this.$toast("请正确输入身份证号码");
         return false;
       }
       if (this.key1 == "") {
-        Toast(this.APPNAME+"请上传身份证正面照");
+        this.$toast("请上传身份证正面照");
         return false;
       }
       if (this.key2 == "") {
-        Toast(this.APPNAME+"请上传身份证反面照");
+        this.$toast("请上传身份证反面照");
         return false;
       }
       apiUserQiniuKYC({
@@ -133,11 +133,11 @@ export default {
           if (result.code == 0) {
             this.authenticationState = 2;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onRead1(file) {
@@ -166,7 +166,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"上传身份证照片失败，请刷新重试");
+          this.$toast("上传身份证照片失败，请刷新重试");
         });
     },
     actionHeadimg(type, keyval, fileval) {
@@ -182,7 +182,7 @@ export default {
           }
         })
         .catch(error => {
-          Toast(this.APPNAME+"上传身份证照片失败，请刷新重试");
+          this.$toast("上传身份证照片失败，请刷新重试");
         });
     }
   }

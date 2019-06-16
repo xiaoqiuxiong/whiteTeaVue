@@ -56,13 +56,13 @@ export default {
     copy() {
       let clipboard = new Clipboard(".tag-read");
       clipboard.on("success", e => {
-        Toast(this.APPNAME+"复制成功");
+        this.$toast("复制成功");
         // 释放内存
         clipboard.destroy();
       });
       clipboard.on("error", e => {
         // 不支持复制
-        Toast(this.APPNAME+"该浏览器不支持自动复制");
+        this.$toast("该浏览器不支持自动复制");
         // 释放内存
         clipboard.destroy();
       });
@@ -80,11 +80,11 @@ export default {
           if (result.code == 0) {
             this.data = result.data;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

@@ -16,27 +16,25 @@
       <div class="right">当前算力：{{power*100}}‰</div>
     </div>
     <div class="integral-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
-        >
-          <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="top">
-              <div class="left">{{item.desc}}</div>
-              <div class="right">{{item.time | timeFilter}}</div>
-            </div>
-            <div class="bottom">
-              <div class="left">{{item.order_sn}}</div>
-              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
-              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
-            </div>
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <div class="item" v-for="(item, index) in list" :key="index">
+          <div class="top">
+            <div class="left">{{item.desc}}</div>
+            <div class="right">{{item.time | timeFilter}}</div>
           </div>
-        </van-list>
-      </van-pull-refresh>
+          <div class="bottom">
+            <div class="left">{{item.order_sn}}</div>
+            <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+            <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
+          </div>
+        </div>
+      </van-list>
     </div>
   </div>
 </template>
@@ -52,42 +50,37 @@ export default {
       loading: false,
       finished: false,
       isRefresh: false,
-      timer1: null,
       timer2: null,
       page_num: 0,
       power: 0,
-      pay_points: 0
+      pay_points: 0,
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.initUserInfo();
   },
   methods: {
     initUserInfo() {
       apiUserIndex()
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             this.pay_points = result.data.user_info.rank_points;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
-    },
-    onRefresh() {
-      if (!this.timer1) {
-        this.timer1 = setTimeout(() => {
-          this.isRefresh = false;
-          this.finished = false;
-          this.list = [];
-          this.page_num = 0;
-          this.timer1 = null;
-          this.timer2 = null;
-          this.onLoad();
-        }, 500);
-      }
     },
     onLoad() {
       this.loading = true;
@@ -117,14 +110,15 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
           this.loading = false;
-          this.timer1 = null;
           this.timer2 = null;
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loading = false;
+          this.timer2 = null;
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

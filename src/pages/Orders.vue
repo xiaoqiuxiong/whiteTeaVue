@@ -218,7 +218,7 @@ export default {
           this.timer2 = null;
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
           this.loading = false;
           this.timer2 = null;
         });

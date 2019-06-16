@@ -60,7 +60,8 @@ export default {
       real_amount: 0,
       card_id: "",
       name: "",
-      cardInfo: {}
+      cardInfo: {},
+      loadingMsg: ""
     };
   },
   created() {
@@ -69,8 +70,13 @@ export default {
       return false;
     }
     this.card_id = this.$route.query.id;
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getUserInfo();
-    this.getApiUserBanks();
   },
   methods: {
     formatStar(name) {
@@ -96,17 +102,19 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             let list = JSON.parse(crypto.decrypt(result.data));
             list.filter((e, i) => {
               this.cardInfo = e;
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     changeAmount() {
@@ -117,15 +125,21 @@ export default {
     userWithdraw() {
       // 判断数据
       if (!this.amount) {
-        Toast(this.APPNAME+"请输入提现金额");
+        this.$toast("请输入提现金额");
         return false;
       }
       if (this.amount > this.userInfo.user_info.user_money) {
-        Toast(this.APPNAME+"提现金额不能大于可提现金额");
+        this.$toast("提现金额不能大于可提现金额");
         this.amount = this.userInfo.user_info.user_money;
         return false;
       }
       this.amount = parseFloat(this.amount) || 0;
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiUserWithdraw({
         data: crypto.encrypt(
           JSON.stringify({
@@ -137,28 +151,31 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            Toast(this.APPNAME+"提现成功");
+            this.$toast("提现成功");
             this.$router.push({ name: "MyProperty" });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getUserInfo() {
       apiUserIndex()
         .then(result => {
           if (result.code == 0) {
+            this.getApiUserBanks();
             this.userInfo = result.data;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

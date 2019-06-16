@@ -76,7 +76,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

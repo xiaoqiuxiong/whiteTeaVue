@@ -2,6 +2,15 @@
   <div>
     <!-- 导航栏 -->
     <van-nav-bar
+      v-if="$route.query.isBuy && $route.query.cart_ids"
+      class="nav-area addaddress"
+      :title="$route.meta.title"
+      left-arrow
+      @click-left="$router.push({name:'SureOrder',query:{cart_ids: $route.query.cart_ids}})"
+    />
+    <!-- 导航栏 -->
+    <van-nav-bar
+      v-if="!$route.query.isBuy"
       class="nav-area addaddress"
       :title="$route.meta.title"
       left-arrow
@@ -13,11 +22,11 @@
         <van-field v-model="consignee" clearable placeholder="收货人"/>
         <van-field v-model="mobile" type="tel" placeholder="手机号"/>
         <van-field
-          @click="setAddressShow"
           v-model="addressCity"
           right-icon="arrow"
           placeholder="请选择所在省份市区"
         />
+        <div @click="setAddressShow" class="address-filed"></div>
         <van-field
           v-model="address"
           type="textarea"
@@ -97,7 +106,12 @@ export default {
 
   methods: {
     actionApiAddUserAddress() {
-      console.log(this.addressCityArray[2].region_id);
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiAddUserAddress({
         data: crypto.encrypt(
           JSON.stringify({
@@ -112,14 +126,23 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            this.$router.push({ name: "Address" });
+            if (this.$route.query.isBuy && this.$route.query.cart_ids) {
+              this.$router.push({
+                name: "SureOrder",
+                query: { cart_ids: this.$route.query.cart_ids }
+              });
+            } else {
+              this.$router.push({ name: "Address", isUser: true });
+            }
           } else {
-            Toast(this.APPNAME + result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME + "网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     setAddressShow() {
@@ -166,6 +189,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.address-filed{
+  height: 44px;
+  position: absolute;
+  width: 100%;
+  top: 88px;
+}
 .actionAddress-box {
   display: none;
 }

@@ -23,7 +23,6 @@ export default {
     }
     this.parent_id = parseFloat(info.parent_id);
     this.key = info.key || "";
-    console.log(info);
     apiBindUser({
       data: crypto.encrypt(
         JSON.stringify({
@@ -35,6 +34,7 @@ export default {
       .then(result => {
         if (result.code == 0) {
           Toast.success({
+            duration: 1500,
             mask: true,
             message: '绑定成功',
             onClose: () => {
@@ -45,6 +45,7 @@ export default {
         } else {
           Toast({
             mask: true,
+            duration: 1000,
             message: this.APPNAME+result.msg,
             onClose: () => {
               this.$router.replace({ name: "Home" });
@@ -54,6 +55,7 @@ export default {
       })
       .catch(err => {
         Toast({
+          duration: 1000,
           mask: true,
           message: this.APPNAME+this.ERRORNETWORK,
           onClose: () => {

@@ -45,7 +45,11 @@
 </template>
 
 <script>
-import { apiUserAddress, apiAddUserAddress, apiUpdateRecAddress } from "@/request/api";
+import {
+  apiUserAddress,
+  apiAddUserAddress,
+  apiUpdateRecAddress
+} from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
@@ -144,11 +148,11 @@ export default {
             }
           });
         } else {
-          Toast(this.APPNAME+result.msg);
+          this.$toast(result.msg);
         }
       })
       .catch(err => {
-        Toast(this.APPNAME+"网络故障，请刷新重试");
+        this.$toast(this.ERRORNETWORK);
       });
   },
   mounted() {},
@@ -171,13 +175,13 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            this.$router.push({ name: "Address" });
+            this.$router.push({ name: "Address", isUser: true });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast(this.ERRORNETWORK);
         });
     },
     setAddressShow() {

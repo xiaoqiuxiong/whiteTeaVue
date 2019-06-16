@@ -1,7 +1,12 @@
 <template>
   <div class="register">
     <!-- 导航栏 -->
-    <van-nav-bar class="nav-area" :title="$route.meta.title" left-arrow @click-left="$router.replace({naem: 'Login'})"/>
+    <van-nav-bar
+      class="nav-area"
+      :title="$route.meta.title"
+      left-arrow
+      @click-left="$router.replace({naem: 'Login'})"
+    />
     <!-- 表单 -->
     <div class="form">
       <van-row type="flex" justify="center">
@@ -68,10 +73,10 @@ export default {
     getCode() {
       // 判断手机号
       if (this.phone.length == 0) {
-        Toast(this.APPNAME+"请输入手机号码");
+        this.$toast("请输入手机号码");
         return false;
       } else if (this.phone.length != 11) {
-        Toast(this.APPNAME+"请输入正确的手机号码");
+        this.$toast("请输入正确的手机号码");
         return false;
       }
       apiSendCode({
@@ -85,7 +90,7 @@ export default {
       })
         .then(result => {
           if (result.code == 0) {
-            Toast(this.APPNAME+"手机验证码已经发送，请注意查收");
+            this.$toast("手机验证码已经发送，请注意查收");
             this.isSms = false;
             let timer;
             timer = window.setInterval(() => {
@@ -99,24 +104,24 @@ export default {
               }
             }, 1000);
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     submitfn() {
       // 判断手机号
       if (this.phone.length == 0) {
-        Toast(this.APPNAME+"请输入手机号码");
+        this.$toast("请输入手机号码");
         return false;
       } else if (this.phone.length != 11) {
-        Toast(this.APPNAME+"请输入正确的手机号码");
+        this.$toast("请输入正确的手机号码");
         return false;
       }
       if (this.sms.length == 0) {
-        Toast(this.APPNAME+"请输入验证码");
+        this.$toast("请输入验证码");
         return false;
       }
       apiBindWxAppVersion({
@@ -147,7 +152,7 @@ export default {
           } else {
             Toast({
               mask: true,
-              message: this.APPNAME+result.msg,
+              message: this.APPNAME + result.msg,
               duration: 1500,
               onClose: () => {
                 this.$router.replace({ name: "Login" });
@@ -158,7 +163,7 @@ export default {
         .catch(err => {
           Toast({
             mask: true,
-            message: this.APPNAME+this.ERRORNETWORK,
+            message: this.APPNAME + this.ERRORNETWORK,
             duration: 1500,
             onClose: () => {
               this.$router.replace({ name: "Login" });

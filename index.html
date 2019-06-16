@@ -1,18 +1,120 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-    
-    <title>共信新零售</title>
-    <style>
-    .address-item .van-swipe-cell__right{
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+  <title>共信新零售</title>
+  <style>
+    #appLoading {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .address-item .van-swipe-cell__right {
       width: 160px;
     }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+
+    @keyframes lds-ball {
+
+      0%,
+      100% {
+        animation-timing-function: cubic-bezier(0.45, 0, 0.9, 0.55);
+      }
+
+      0% {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+      }
+
+      50% {
+        -webkit-transform: translate(0, 108px);
+        transform: translate(0, 108px);
+        animation-timing-function: cubic-bezier(0, 0.45, 0.55, 0.9);
+      }
+
+      100% {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+      }
+    }
+
+    @-webkit-keyframes lds-ball {
+
+      0%,
+      100% {
+        animation-timing-function: cubic-bezier(0.45, 0, 0.9, 0.55);
+      }
+
+      0% {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+      }
+
+      50% {
+        -webkit-transform: translate(0, 108px);
+        transform: translate(0, 108px);
+        animation-timing-function: cubic-bezier(0, 0.45, 0.55, 0.9);
+      }
+
+      100% {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+      }
+    }
+
+    .lds-ball {
+      position: relative;
+    }
+
+    .lds-ball div {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #fc4309;
+      left: 74px;
+      top: 20px;
+      -webkit-animation: lds-ball 1s linear infinite;
+      animation: lds-ball 1s linear infinite;
+    }
+
+    .lds-ball div img{
+      width: 52px;
+      height: 52px;
+      box-shadow: 0 10px 10px #666;
+      border-radius: 50%;
+    }
+
+    .lds-ball {
+      width: 200px !important;
+      height: 200px !important;
+      -webkit-transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
+      transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="appLoading">
+    <div class="lds-css ng-scope">
+      <div style="width:100%;height:100%" class="lds-ball">
+        <div>
+          <img src="/static/img/loading.png" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="app"></div>
+  <!-- built files will be auto injected -->
+</body>
+
 </html>

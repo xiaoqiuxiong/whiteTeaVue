@@ -53,7 +53,7 @@ export default {
         }
       })
       .catch(err => {
-        Toast(this.APPNAME+"网络故障，请刷新重试");
+        this.$toast(this.ERRORNETWORK);
       });
   },
   methods: {
@@ -68,12 +68,12 @@ export default {
                 this.list.splice(index, 1);
               }
             });
-          }else{
-            Toast(this.APPNAME+result.msg)
+          } else {
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast(this.ERRORNETWORK);
         });
     },
     formatStar(name) {

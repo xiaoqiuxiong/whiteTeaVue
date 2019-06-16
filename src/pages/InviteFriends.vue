@@ -55,7 +55,7 @@ export default {
       show: false,
       url: "",
       duichongUrl: "",
-      value: ''
+      value: ""
     };
   },
   components: {
@@ -67,21 +67,21 @@ export default {
         if (result.code == 0) {
           this.duiChongRule = result.data;
         } else {
-          Toast(this.APPNAME+result.msg);
+          this.$toast(result.msg);
         }
       })
       .catch(err => {
-        Toast(this.APPNAME+this.ERRORNETWORK);
+        this.$toast(this.ERRORNETWORK);
       });
     this.getInviteUserInfo();
     this.getUserDuiChongInfo();
   },
   methods: {
-    cahngeDuichong(){
-      if(this.checked){
-        this.value = this.duichongUrl
-      }else{
-        this.value = this.url
+    cahngeDuichong() {
+      if (this.checked) {
+        this.value = this.duichongUrl;
+      } else {
+        this.value = this.url;
       }
     },
     getInviteUserInfo() {
@@ -91,9 +91,9 @@ export default {
           this.url = `${location.origin}/#/bindFriends?parent_id=${
             result.user_id
           }&key=`;
-          this.value = this.url
+          this.value = this.url;
         } else {
-          Toast(this.APPNAME+result.msg);
+          this.$toast(result.msg);
         }
       });
     },
@@ -105,7 +105,7 @@ export default {
             result.parent_id
           }&key=${result.uid}`;
         } else {
-          Toast(this.APPNAME+result.msg);
+          this.$toast(result.msg);
         }
       });
     },

@@ -29,11 +29,13 @@
       is-link
       :value="item.name"
     />
-    <van-cell @click="$router.push({name: 'Address'})" title="我的收货地址" is-link/>
+    <van-cell @click="$router.push({name: 'Address',query: {isUser: true}})" title="我的收货地址" is-link/>
     <van-action-sheet v-model="show">
       <van-datetime-picker
+      
         v-model="userInfo.birthday"
         type="date"
+        :min-date="new Date(1949, 0, 1)"
         @confirm="confirmTime"
         @cancel="cancelTime"
       />
@@ -75,6 +77,7 @@ import { Toast, CellGroup } from "vant";
 export default {
   data() {
     return {
+      loadingMsg: "",
       showDialog: false,
       userInfo: {},
       key: "",
@@ -90,21 +93,31 @@ export default {
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.initUserInfo();
   },
   methods: {
     initUserInfo() {
       apiUserIndex()
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             this.userInfo = result.data.user_info;
             this.userInfo.birthday = new Date(
               this.userInfo.birthday.replace(/-/g, "/")
             );
+          } else {
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onSelectSex(val) {
@@ -128,7 +141,7 @@ export default {
       let params = {};
       if (type == "user_name") {
         if (!regu.test(this.userInfo.user_name)) {
-          Toast(this.APPNAME+"请输入4-20个字符");
+          this.$toast("请输入4-20个字符");
           return false;
         }
       }
@@ -139,12 +152,19 @@ export default {
         day: this.userInfo.birthday.getDate().toString(),
         sex: this.userInfo.sex
       };
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiUpdateUserInfo({
         data: crypto.encrypt(JSON.stringify(params))
       })
         .then(result => {
+          this.loadingMsg.clear()
           if (result.code != 0) {
-            Toast.fail(result.msg);
+            this.$toast(result.msg);
             return false;
           }
           if (type == "user_name") {
@@ -153,7 +173,8 @@ export default {
           this.showSex = false;
         })
         .catch(err => {
-          Toast(this.APPNAME+"修改信息失败，请刷新重试");
+          this.loadingMsg.clear()
+          this.$toast("修改信息失败，请刷新重试");
         });
     },
     dateToString(date) {
@@ -178,10 +199,14 @@ export default {
           if (result.code == 0) {
             this.key = crypto.decrypt(result.data);
             this.actionHeadimg();
+          }else{
+            this.loadingMsg.clear()
+            this.$toast("上传头像失败，请刷新重试");
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"上传头像失败，请刷新重试");
+          this.loadingMsg.clear()
+          this.$toast("上传头像失败，请刷新重试");
         });
     },
     actionHeadimg() {
@@ -194,24 +219,33 @@ export default {
             data: crypto.encrypt(JSON.stringify({ key: response.data.key }))
           })
             .then(result => {
+              this.loadingMsg.clear()
               if (result.code == 0) {
                 this.userInfo.headimg = crypto.decrypt(result.data);
                 this.key = "";
                 this.file = "";
                 this.param = new FormData();
               } else {
-                Toast(this.APPNAME+result.msg);
+                this.$toast(result.msg);
               }
             })
             .catch(err => {
-              Toast(this.APPNAME+"上传头像失败，请刷新重试");
+              this.loadingMsg.clear()
+              this.$toast("上传头像失败，请刷新重试");
             });
         })
         .catch(error => {
-          Toast(this.APPNAME+"上传头像失败，请刷新重试");
+          this.loadingMsg.clear()
+          this.$toast("上传头像失败，请刷新重试");
         });
     },
     onRead(file) {
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       this.file = file;
       this.getToken();
     }

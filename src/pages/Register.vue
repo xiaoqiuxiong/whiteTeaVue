@@ -88,6 +88,7 @@ import { Toast } from "vant";
 export default {
   data() {
     return {
+      loading: "",
       active: 0,
       phone: "",
       password: "",
@@ -108,9 +109,14 @@ export default {
       }
     };
   },
-
   methods: {
     getCode() {
+      this.loading = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "数据加载"
+      });
       apiSendCode({
         data: crypto.encrypt(
           JSON.stringify({
@@ -121,8 +127,9 @@ export default {
         )
       })
         .then(result => {
+          this.loading.clear();
           if (result.code == 0) {
-            Toast(this.APPNAME + "手机验证码已经发送，请注意查收");
+            this.$toast("手机验证码已经发送，请注意查收");
             this.isSms = false;
             let timer;
             timer = window.setInterval(() => {
@@ -136,11 +143,12 @@ export default {
               }
             }, 1000);
           } else {
-            Toast(this.APPNAME + result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME + "数据请求失败");
+          this.loading.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     // 检测手机号码是否已经被注册
@@ -155,17 +163,17 @@ export default {
         })
           .then(result => {
             if (result.code == 0) {
-              Toast(this.APPNAME + "手机号码已经注册");
+              this.$toast("手机号码已经注册");
               this.isPhoneOk = false;
               this.isSms = false;
             } else if (result.code == 3122) {
-              Toast(this.APPNAME + "手机号码可用");
+              this.$toast("手机号码可用");
               this.isPhoneOk = true;
               this.isSms = true;
             }
           })
           .catch(err => {
-            Toast(this.APPNAME + "数据请求失败");
+            this.$toast(this.ERRORNETWORK);
           });
       }
     },
@@ -173,42 +181,48 @@ export default {
     actionRegister() {
       // 手机号码
       if (this.phone.length == 0) {
-        Toast(this.APPNAME + "请输入手机号码");
+        this.$toast('请输入手机号码');
         return false;
       } else if (this.phone.length != 11) {
-        Toast(this.APPNAME + "请输入正确的手机号码");
+        this.$toast('请输入正确的手机号码');
         return false;
       }
       // 密码
       if (this.password.length == "") {
-        Toast(this.APPNAME + "请输入登录密码");
+        this.$toast('请输入登录密码');
         return false;
       } else if (this.password.length < 6 || this.password.length > 20) {
-        Toast(this.APPNAME + "登录密码不能少于6位/密码不能超过20位");
+        this.$toast('登录密码不能少于6位/密码不能超过20位');
         return false;
       }
       // 重复密码
       if (this.resPassword.length == "") {
-        Toast(this.APPNAME + "请重复输入登录密码");
+        this.$toast('请重复输入登录密码');
         return false;
       } else if (this.password !== this.resPassword) {
-        Toast(this.APPNAME + "两次输入登录密码不一致");
+        this.$toast('请重复输入两次输入登录密码不一致登录密码');
         return false;
       }
       // 验证码
       if (this.sms.length == "") {
-        Toast(this.APPNAME + "请输入手机验证码");
+        this.$toast('请输入手机验证码');
         return false;
       }
       // 用户协议
       if (!this.checked) {
-        Toast(this.APPNAME + "请仔细阅读用户协议，并勾选");
+        this.$toast("请仔细阅读用户协议，并勾选");
         return false;
       }
       this.actionRegisterAxios();
     },
     // 注册数据提交
     actionRegisterAxios() {
+      this.loading = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiRegister({
         data: crypto.encrypt(
           JSON.stringify({
@@ -223,6 +237,7 @@ export default {
         )
       })
         .then(result => {
+          this.loading.clear();
           if (result.code == 0) {
             Toast({
               type: "success",
@@ -234,11 +249,12 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME + result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME + "数据请求失败");
+          this.loading.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onClick(index, title) {

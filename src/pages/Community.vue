@@ -37,27 +37,25 @@
     </div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
-        >
-          <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="top">
-              <div class="left">{{item.order_sn}}</div>
-              <div class="right">{{item.time | timeFilter}}</div>
-            </div>
-            <div class="bottom">
-              <div class="left">{{item.desc}}</div>
-              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
-              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
-            </div>
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <div class="item" v-for="(item, index) in list" :key="index">
+          <div class="top">
+            <div class="left">{{item.order_sn}}</div>
+            <div class="right">{{item.time | timeFilter}}</div>
           </div>
-        </van-list>
-      </van-pull-refresh>
+          <div class="bottom">
+            <div class="left">{{item.desc}}</div>
+            <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+            <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
+          </div>
+        </div>
+      </van-list>
     </div>
   </div>
 </template>
@@ -65,9 +63,11 @@
 <script>
 import { apiCommunityJiBei, apiMyTeam } from "@/request/api";
 import crypto from "@/cryptoUtil";
+import { Toast } from "vant";
 export default {
   data() {
     return {
+      loadingMsg: "",
       searchValue: "",
       searchShow: false,
       total_income: 0,
@@ -78,38 +78,38 @@ export default {
       first_index: 0,
       second_index: 0,
       teamTatol: 0,
-      isRefresh: false
+      timer: null
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getMyTeam();
   },
   methods: {
     onSearch() {
-      this.isRefresh = false;
       this.finished = false;
       this.list = [];
       this.page_num = 0;
-      this.irst_index = 0;
+      this.first_index = 0;
       this.second_index = 0;
+      this.timer = null;
       this.onLoad();
     },
     onCancel() {
       this.searchShow = false;
     },
-    onRefresh() {
-      setTimeout(() => {
-        this.isRefresh = false;
-        this.finished = false;
-        this.list = [];
-        this.page_num = 0;
-        this.irst_index = 0;
-        this.second_index = 0;
-        this.onLoad();
-      }, 500);
-    },
     onLoad() {
-      this.getCommunityJiBei();
+      this.loading = true;
+      if (!this.timer) {
+        this.timer = setTimeout(() => {
+          this.getCommunityJiBei();
+        }, 500);
+      }
     },
     getCommunityJiBei() {
       apiCommunityJiBei({
@@ -122,15 +122,15 @@ export default {
           })
         )
       })
-        .then(response => {
-          if (response.code == 0) {
-            response = JSON.parse(crypto.decrypt(response.data));
-            this.total_income = response.total_income;
-            if (response.logs.length) {
+        .then(result => {
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data));
+            this.total_income = result.total_income;
+            if (result.logs.length) {
               this.page_num++;
-              this.first_index = response.first_index;
-              this.second_index = response.second_index;
-              this.list = this.list.concat(response.logs);
+              this.first_index = result.first_index;
+              this.second_index = result.second_index;
+              this.list = this.list.concat(result.logs);
             } else {
               this.finished = true;
             }
@@ -138,22 +138,29 @@ export default {
             this.finished = true;
           }
           this.loading = false;
+          this.timer = null;
         })
         .catch(error => {
-          console.log(error);
+          this.$toast(this.ERRORNETWORK);
+          this.loading = false;
+          this.timer = null;
         });
     },
     getMyTeam() {
       apiMyTeam({
         data: crypto.encrypt(JSON.stringify({ page_num: 0, type: 0 }))
       })
-        .then(response => {
-          if (response.code == 0) {
-            this.teamTatol = response.data.total;
+        .then(result => {
+          this.loadingMsg.clear();
+          if (result.code == 0) {
+            this.teamTatol = result.data.total;
+          } else {
+            this.$toast(result.msg);
           }
         })
         .catch(error => {
-          console.log(error);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

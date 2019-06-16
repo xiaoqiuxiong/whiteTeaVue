@@ -1,14 +1,12 @@
 <template>
   <div>
     <van-nav-bar
-      v-if="!isNull"
       fixed
       class="nav-area"
       :title="$route.meta.title"
       left-arrow
       @click-left="returnPrePage"
     />
-    <van-nav-bar v-if="isNull" fixed class="nav-area" :title="$route.meta.title"/>
     <div class="cont-area">
       <div class="top">
         <img :src="require('@/assets/images/mask_activity/03.png')" alt>
@@ -37,42 +35,39 @@
 </template>
 
 <script>
-let isNull = false;
 import { apiGetMask, apiBuyNow, apiIsUserCanGetMask } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
   data() {
     return {
-      isNull: false
     };
-  },
-  beforeRouteEnter(to, from, next) {
-    isNull = from.name == null;
-    next();
-  },
-  mounted() {
-    this.isNull = isNull;
   },
   methods: {
     getMask() {
-      apiIsUserCanGetMask().then(result => {
-        if (result.code == 0) {
-          result = JSON.parse(crypto.decrypt(result.data));
-          apiGetMask()
-            .then(result => {
-              if (result.code == 0) {
-                result = JSON.parse(crypto.decrypt(result.data));
-                this.actionApiBuyNow(result.goods_id, result.type);
-              } else {
-                Toast(this.APPNAME+result.msg);
-              }
-            })
-            .catch(err => {
-              Toast(this.APPNAME+this.ERRORNETWORK);
-            });
-        }
-      });
+      apiIsUserCanGetMask()
+        .then(result => {
+          if (result.code == 0) {
+            result = JSON.parse(crypto.decrypt(result.data));
+            apiGetMask()
+              .then(result => {
+                if (result.code == 0) {
+                  result = JSON.parse(crypto.decrypt(result.data));
+                  this.actionApiBuyNow(result.goods_id, result.type);
+                } else {
+                  this.$toast(result.msg);
+                }
+              })
+              .catch(err => {
+                this.$toast(this.ERRORNETWORK);
+              });
+          } else {
+            this.$toast(result.msg);
+          }
+        })
+        .catch(err => {
+          this.$toast(this.ERRORNETWORK);
+        });
     },
     actionApiBuyNow(goods_id, type) {
       apiBuyNow({
@@ -97,11 +92,11 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

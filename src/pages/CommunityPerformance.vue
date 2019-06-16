@@ -17,27 +17,25 @@
     </div>
     <!-- 社区收入流水 area -->
     <div class="income-list-area">
-      <van-pull-refresh v-model="isRefresh" @refresh="onRefresh">
-        <van-list
-          v-model="loading"
-          :finished="finished"
-          finished-text="没有数据了"
-          error-text="数据加载失败了"
-          @load="onLoad"
-        >
-          <div class="item" v-for="(item, index) in list" :key="index">
-            <div class="top">
-              <div class="left">{{item.order_sn}}</div>
-              <div class="right">{{item.time | timeFilter}}</div>
-            </div>
-            <div class="bottom">
-              <div class="left">{{item.desc}}</div>
-              <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
-              <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
-            </div>
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有数据了"
+        error-text="数据加载失败了"
+        @load="onLoad"
+      >
+        <div class="item" v-for="(item, index) in list" :key="index">
+          <div class="top">
+            <div class="left">{{item.order_sn}}</div>
+            <div class="right">{{item.time | timeFilter}}</div>
           </div>
-        </van-list>
-      </van-pull-refresh>
+          <div class="bottom">
+            <div class="left">{{item.desc}}</div>
+            <div class="right green" v-if="item.amount<0">{{item.amount | moneyFilter}}</div>
+            <div class="right red" v-else>+{{item.amount | moneyFilter}}</div>
+          </div>
+        </div>
+      </van-list>
     </div>
   </div>
 </template>
@@ -59,19 +57,13 @@ export default {
   },
   created() {},
   methods: {
-    onRefresh() {
+    onLoad() {
+      this.loading = true;
       if (!this.timer) {
         this.timer = setTimeout(() => {
-          this.isRefresh = false;
-          this.finished = false;
-          this.list = [];
-          this.page_num = 0;
-          this.timer = null;
-        }, 1000);
+          this.getTotalIncome();
+        }, 500);
       }
-    },
-    onLoad() {
-      this.getTotalIncome();
     },
     getTotalIncome() {
       apiTotalIncome({
@@ -89,9 +81,6 @@ export default {
             if (response.order_listt.length) {
               this.page_num++;
               this.list = this.list.concat(response.order_listt);
-              if (response.order_listt.length < 10) {
-                this.finished = true;
-              }
             } else {
               this.finished = true;
             }
@@ -99,9 +88,12 @@ export default {
             this.finished = true;
           }
           this.loading = false;
+          this.timer = null;
         })
         .catch(error => {
-          console.log(error);
+          this.$toast(this.ERRORNETWORK);
+          this.loading = false;
+          this.timer = null;
         });
     }
   }

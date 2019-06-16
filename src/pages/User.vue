@@ -40,12 +40,16 @@
             <div
               class="bottom"
               v-if="userInfo.user_info"
-            >{{userInfo.user_info.rank_points | moneyFilter}}</div>
+            >{{userInfo.user_info.pay_points | moneyFilter}}</div>
           </div>
         </div>
       </div>
       <div class="mask">
-        <img @click="$router.push({name: 'InviteToGetGift'})" :src="require('@/assets/images/mask_activity/02.png')" alt>
+        <img
+          @click="$router.push({name: 'InviteToGetGift'})"
+          :src="require('@/assets/images/mask_activity/02.png')"
+          alt
+        >
       </div>
       <!-- 选项 area -->
       <div class="options-list-area option2">
@@ -119,31 +123,50 @@ import {
   apiIsUserCanGetMask
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
-import { Toast } from "vant";
+import { Toast, Dialog } from "vant";
 export default {
   data() {
     return {
+      loading: "",
       userInfo: {}
     };
   },
   created() {
+    this.loading = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.initUserInfo();
   },
   methods: {
     initUserInfo() {
       apiUserIndex()
         .then(result => {
+          this.loading.clear();
           if (result.code == 0) {
             this.userInfo = result.data;
+          } else {
+            Toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loading.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     logout() {
-      this.$store.commit("setToken", "");
-      this.$router.replace({ name: "Login" });
+      Dialog.confirm({
+        message: "您确认需要退出登录吗？"
+      })
+        .then(() => {
+          this.$store.commit("setToken", "");
+          this.$router.replace({ name: "Login" });
+        })
+        .catch(() => {
+          // on cancel
+        });
     }
   }
 };

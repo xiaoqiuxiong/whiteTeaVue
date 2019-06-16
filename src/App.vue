@@ -15,6 +15,12 @@ export default {
     document.title = this.$route.meta.title;
   },
   created() {
+    try {
+      document.body.removeChild(document.getElementById("appLoading"));
+      setTimeout(function() {
+        document.getElementById("app").style.display = "block";
+      }, 500);
+    } catch (e) {}
     this.$store.commit("setAllAddress", JSON.stringify(allAddressJson.data));
   },
   watch: {
@@ -26,11 +32,28 @@ export default {
 </script>
 
 <style lang="less">
-#pay_form{
+.van-picker__cancel,
+.van-picker__confirm {
+  color: #fd6b1a;
+}
+.nothing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 144px;
+    margin-top: 20px;
+  }
+}
+.van-dialog__confirm,
+.van-dialog__confirm:active {
+  color: #fd6b1a;
+}
+#pay_form {
   display: none;
 }
-.qrcode-img{
-  img{
+.qrcode-img {
+  img {
     width: 134px;
   }
 }

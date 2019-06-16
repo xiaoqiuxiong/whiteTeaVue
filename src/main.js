@@ -7,6 +7,7 @@ import "lib-flexible";
 import utils from "@/utils";
 import filters from "@/filters";
 import store from "./store";
+import { toast,toastSuccess } from'@/toast'
 import {
   Row,
   Col,
@@ -53,6 +54,7 @@ import {
 } from "vant";
 
 Vue.use(Tab)
+  .use(Loading)
   .use(Tabs)
   .use(Row)
   .use(Col)
@@ -105,6 +107,8 @@ Vue.filter("numberFilter", filters.toThousands);
 // FastClick.attach(document.body)
 
 Vue.config.productionTip = false;
+Vue.prototype.$toast= toast
+Vue.prototype.$toastSuccess= toastSuccess
 
 
 /* eslint-disable no-new */

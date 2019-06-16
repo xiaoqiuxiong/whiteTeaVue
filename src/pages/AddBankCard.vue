@@ -42,28 +42,35 @@ export default {
       name: "",
       id_card: "",
       phone: "",
-      sms: ""
+      sms: "",
+      loadingMsg: ""
     };
   },
   methods: {
     actionData() {
       // 判断数据
       if (this.card_num == "") {
-        Toast(this.APPNAME+"请正确输入银行卡号");
+        this.$toast("请正确输入银行卡号");
         return false;
       }
       if (!/^[\u4e00-\u9fa5]+$/.test(this.name)) {
-        Toast(this.APPNAME+"请正确输入姓名");
+        this.$toast("请正确输入姓名");
         return false;
       }
       if (!/^[0-9a-zA-Z]+$/.test(this.id_card) || this.id_card.length != 18) {
-        Toast(this.APPNAME+"请正确输入身份证号");
+        this.$toast("请正确输入身份证号");
         return false;
       }
       if (this.phone.length != 11) {
-        Toast(this.APPNAME+"请正确输入手机号码");
+        this.$toast("请正确输入手机号码");
         return false;
       }
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiUserAddBankCard({
         data: crypto.encrypt(
           JSON.stringify({
@@ -75,22 +82,23 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             Toast({
-              message: this.APPNAME+"添加银行卡成功",
-              type: 'success',
+              message: this.APPNAME + "添加银行卡成功",
+              type: "success",
               duration: 1500,
-              onClose: ()=>{
+              onClose: () => {
                 this.$router.push({ name: "BankCard" });
               }
             });
-            
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(thsi.ERRORNETWORK);
         });
     }
   }

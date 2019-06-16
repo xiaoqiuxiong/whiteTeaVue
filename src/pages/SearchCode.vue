@@ -26,14 +26,24 @@
         </div>
         <div v-if="!searchHistory.length" class="list no">暂无记录</div>
         <div v-if="searchHistory.length" class="list">
-          <div @click="onSearch(item)" class="item" v-for="(item, index) in searchHistory" :key="index">{{item}}</div>
+          <div
+            @click="key_word=item;onSearch(item)"
+            class="item"
+            v-for="(item, index) in searchHistory"
+            :key="index"
+          >{{item}}</div>
         </div>
       </div>
       <div class="hot">
         <div class="title">热门搜索</div>
         <div v-if="!list.length" class="list no">暂无记录</div>
         <div v-if="list.length" class="list">
-          <div @click="onSearch(item.goods_name)" class="item" v-for="(item, index) in list" :key="index">{{item.goods_name}}</div>
+          <div
+            @click="key_word=item.goods_name;onSearch(item.goods_name)"
+            class="item"
+            v-for="(item, index) in list"
+            :key="index"
+          >{{item.goods_name}}</div>
         </div>
       </div>
     </div>
@@ -47,12 +57,19 @@ import { Toast } from "vant";
 export default {
   data() {
     return {
+      loading: '',
       key_word: "",
       list: [],
       searchHistory: this.$store.state.searchHistory
     };
   },
   created() {
+    this.loading = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.initCode();
   },
   methods: {
@@ -63,19 +80,22 @@ export default {
     initCode() {
       apiGetHotGoods()
         .then(result => {
+          this.loading.clear()
           if (result.code == 0) {
             this.list = result.data;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loading.clear()
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onSearch(val) {
-      if(val){
-        this.key_word = val
+      if(this.key_word == ''){
+        this.$toast('请输入需要搜索的内容')
+        return false
       }
       if (this.searchHistory.indexOf(this.key_word) == -1) {
         this.searchHistory.push(this.key_word);
@@ -85,7 +105,7 @@ export default {
         name: "SearchList",
         query: { key_word: this.key_word }
       });
-    },
+    }
   }
 };
 </script>

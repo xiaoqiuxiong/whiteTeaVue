@@ -14,7 +14,7 @@
         <!-- 原始顶部按钮 area -->
         <div class="old-btns-area" ref="oldtabArea">
           <div @click="returnPrePage" class="left"></div>
-          <div class="right"  @click="$refs.menu.isShow(true)"></div>
+          <div class="right" @click="$refs.menu.isShow(true)"></div>
         </div>
         <!-- 导航 area -->
         <div class="tab-area" ref="tabArea">
@@ -28,7 +28,7 @@
               <li @click="changeTab(2)" v-bind:class="{ active: active == 2 }">详情</li>
             </ul>
           </div>
-          <div class="right"  @click="$refs.menu.isShow(true)"></div>
+          <div class="right" @click="$refs.menu.isShow(true)"></div>
         </div>
         <!-- 轮播商品图 area -->
         <div v-if="goodsInfo.Banner" class="goods-swipe" ref="goodsSwipe">
@@ -254,7 +254,7 @@ import { Toast } from "vant";
 
 export default {
   components: {
-    Menu,
+    Menu
   },
   data() {
     return {
@@ -320,11 +320,11 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.$toast("网络故障，请刷新重试");
         });
     },
     onChangeStepper(value) {},

@@ -87,15 +87,22 @@ export default {
       isRefresh: false,
       timer1: null,
       timer2: null,
-      userInfo: {}
+      userInfo: {},
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getUserInfo();
   },
   methods: {
     getOther() {
-      Toast(this.APPNAME+"功能正在开发中");
+      this.$toast("功能正在开发中");
     },
     onSelect(item) {
       // 点击选项时默认不会关闭菜单，可以手动关闭
@@ -112,11 +119,13 @@ export default {
     getUserInfo() {
       apiUserIndex()
         .then(response => {
+          this.loadingMsg.clear()
           if (response.code == 0) {
             this.userInfo = response.data;
           }
         })
         .catch(error => {
+          this.loadingMsg.clear()
           console.log(error);
         });
     },
@@ -240,7 +249,7 @@ export default {
       height: 90px;
       overflow: hidden;
       border-radius: 6px;
-      img{
+      img {
         width: 100%;
       }
     }

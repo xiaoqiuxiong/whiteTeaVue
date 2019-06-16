@@ -174,6 +174,7 @@
       <input type="hidden" name="return_url" :value="alipayData.return_url">
       <input type="submit" class="J-btn-submit">
     </form>
+    <div v-show="isFinish && isWeiXin" class="loading"><van-loading size="24px" vertical>加载中...</van-loading></div>
   </div>
 </template>
 <!-- 按钮 -->
@@ -232,14 +233,15 @@ export default {
       addressList: [],
       address_consignee: "",
       address_combine: "",
-      address_mobile: ""
+      address_mobile: "",
+      isFinish: true
     };
   },
   created() {
     // 获取传过来的购物车cart_ids,如果没有重定向到首页
     const cartIdsData = this.$route.query.cart_ids || null;
     if (!cartIdsData) {
-      this.$router.replace({ name: "Home" });
+      // this.$router.replace({ name: "Home" });
       return false;
     }
     this.cart_ids.push(Number(cartIdsData));
@@ -308,11 +310,11 @@ export default {
             result = JSON.parse(crypto.decrypt(result.data));
             this.jsapi_ticket = result;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getGetWebAccessToken() {
@@ -320,16 +322,18 @@ export default {
         data: crypto.encrypt(JSON.stringify({ code: this.code }))
       })
         .then(result => {
+          this.isFinish = false
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
             this.open_id = result.openid;
             this.access_token = result.access_token;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.isFinish = false
+          this.$toast(this.ERRORNETWORK);
         });
     },
     wexinPay() {
@@ -536,7 +540,6 @@ export default {
             apiUserAddress().then(result => {
               if (result.code == 0) {
                 this.addressList = JSON.parse(crypto.decrypt(result.data));
-                console.log(this.addressList);
                 this.addressList.filter((e, i) => {
                   if (e.address_id == this.address_id) {
                     this.address_consignee = e.consignee;
@@ -561,7 +564,7 @@ export default {
                   }
                 });
               } else {
-                Toast(this.APPNAME+result.msg);
+                this.$toast(result.msg);
               }
             });
           } else if (result.code == 10087) {
@@ -571,13 +574,16 @@ export default {
               confirmButtonText: "去添加地址"
             })
               .then(() => {
-                this.$router.replace({ name: "Address" });
+                this.$router.replace({
+                  name: "AddAddress",
+                  query: { isBuy: true, cart_ids: this.$route.query.cart_ids }
+                });
               })
               .catch(() => {
                 this.$router.replace({ name: "Home" });
               });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
             this.$router.replace({ name: "Home" });
           }
           if (this.$route.query.address_id) {
@@ -591,16 +597,16 @@ export default {
                     }
                   });
                 } else {
-                  Toast(this.APPNAME+result.msg);
+                  this.$toast(result.msg);
                 }
               })
               .catch(err => {
-                Toast(this.APPNAME+this.ERRORNETWORK);
+                this.$toast(this.ERRORNETWORK);
               });
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     submitAfter(result) {
@@ -675,7 +681,7 @@ export default {
           this.wexinPay();
         }
       } else {
-        Toast(this.APPNAME+result.msg);
+        this.$toast(result.msg);
       }
     },
     onSubmit() {
@@ -719,7 +725,7 @@ export default {
             this.submitAfter(result);
           })
           .catch(err => {
-            Toast(this.APPNAME+this.ERRORNETWORK);
+            this.$toast(this.ERRORNETWORK);
           });
       } else {
         apiSureOrder({
@@ -737,7 +743,7 @@ export default {
             this.submitAfter(result);
           })
           .catch(err => {
-            Toast(this.APPNAME+this.ERRORNETWORK);
+            this.$toast(this.ERRORNETWORK);
           });
       }
     }
@@ -751,6 +757,18 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.loading{
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .freight {
   .van-cell__value {
     justify-content: flex-end;

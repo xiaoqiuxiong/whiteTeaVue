@@ -13,7 +13,7 @@
       <!-- 轮播area -->
       <div class="swipe-area home-swipe-area">
         <van-swipe :autoplay="3000">
-          <van-swipe-item  v-for="(item, index) in banners" :key="index">
+          <van-swipe-item v-for="(item, index) in banners" :key="index">
             <div v-if="item.code == 'mianmo'" @click="skipSwipeFn">
               <img v-lazy="item.image">
             </div>
@@ -76,16 +76,14 @@
 
 <script>
 import {
-  apiHome,
-  apiIsUserCanGetMask,
-  apiGetMask,
-  apiBuyNow
+  apiHome
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Dialog, Toast } from "vant";
 export default {
   data() {
     return {
+      loading: "",
       show: false,
       maskActivityImg: require("@/assets/images/mask_activity/01.png"),
       maskActivityBtnImg: require("@/assets/images/mask_activity/04.png"),
@@ -110,14 +108,25 @@ export default {
         }
       ],
       goods: [],
-      page_num: 10 // 页码
+      page_num: 10
     };
   },
   created() {
-    apiHome({ page_num: 10 }).then(res => {
-      this.banners = res.data.banner;
-      this.goods = res.data.goods;
+    this.loading = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
     });
+    apiHome({ page_num: 10 })
+      .then(res => {
+        this.banners = res.data.banner;
+        this.goods = res.data.goods;
+        this.loading.clear()
+      })
+      .catch(err => {
+        this.loading.clear()
+      });
     this.show = this.$store.state.hasMask == "true" ? true : false;
   },
   methods: {

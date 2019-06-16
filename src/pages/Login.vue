@@ -62,6 +62,7 @@ import axios from "axios";
 export default {
   data() {
     return {
+      loading: "",
       active: 1,
       phone: "",
       password: "",
@@ -159,7 +160,7 @@ export default {
                           message: "登录成功",
                           duration: 1500,
                           onClose: () => {
-                            this.$router.replace({neme: 'Home'})
+                            this.$router.replace({ name: "Home" });
                           }
                         });
                       } else if (
@@ -236,24 +237,30 @@ export default {
     actionLogin() {
       // 手机号码
       if (this.phone.length == 0) {
-        Toast(this.APPNAME + "请输入手机号码");
+        this.$toast("请输入手机号码");
         return false;
       } else if (this.phone.length != 11) {
-        Toast(this.APPNAME + "请输入正确的手机号码");
+        this.$toast("请输入正确的手机号码");
         return false;
       }
       // 密码
       if (this.password.length == "") {
-        Toast(this.APPNAME + "请输入登录密码");
+        this.$toast("请输入登录密码");
         return false;
       } else if (this.password.length < 6 || this.password.length > 20) {
-        Toast(this.APPNAME + "登录密码不能少于6位/密码不能超过20位");
+        this.$toast("登录密码不能少于6位/密码不能超过20位");
         return false;
       }
       this.actionLoginAxios();
     },
     // 登录数据提交
     actionLoginAxios() {
+      this.loading = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiLogin({
         data: crypto.encrypt(
           JSON.stringify({
@@ -268,6 +275,7 @@ export default {
         )
       })
         .then(result => {
+          this.loading.clear()
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
 
@@ -283,11 +291,12 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME + result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME + "登录失败，请刷新重试");
+          this.loading.clear()
+          this.$toast("登录失败，请刷新重试");
         });
     },
     onClick(index, title) {

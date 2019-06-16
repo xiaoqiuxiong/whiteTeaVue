@@ -26,7 +26,7 @@
             />
           </van-cell-group>
           <div slot="right">
-            <span class="right-btn" @click="del(item.address_id)">删 除</span>
+            <span class="right-btn" @click="del(item.id)">删 除</span>
           </div>
         </van-swipe-cell>
       </div>
@@ -42,16 +42,23 @@
 </template>
 
 <script>
-import { apiUserBanks, apiDelUserAddress } from "@/request/api";
+import { apiUserBanks, apiUserDelBankCard } from "@/request/api";
 import crypto from "@/cryptoUtil";
 import { Toast } from "vant";
 export default {
   data() {
     return {
-      list: []
+      list: [],
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getApiUserBanks();
   },
 
@@ -79,46 +86,49 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             this.list = JSON.parse(crypto.decrypt(result.data));
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     del(id) {
-      apiDelUserAddress({
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
+      apiUserDelBankCard({
         data: crypto.encrypt(
           JSON.stringify({
-            address_id: id
+            card_id: id
           })
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            Toast(this.APPNAME+"删除收货地址成功");
+            this.$toast("删除成功");
             this.list.filter((item, index) => {
               if (item.address_id == id) {
                 this.list.splice(index, 1);
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
-    },
-    onAdd() {
-      Toast(this.APPNAME+"新增地址");
-    },
-
-    onEdit(item, index) {
-      Toast(this.APPNAME+"编辑地址:" + index);
     }
   }
 };

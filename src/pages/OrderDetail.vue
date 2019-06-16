@@ -6,7 +6,7 @@
       class="nav-area addaddress"
       :title="$route.meta.title"
       left-arrow
-      @click-left="returnPrePage"
+      @click-left="$router.push({name: 'Orders'})"
     >
       <van-icon @click="$refs.menu.isShow(true)" name="weapp-nav" slot="right"/>
     </van-nav-bar>
@@ -119,7 +119,7 @@
       </div>
     </div>
     <div class="bottom-tip-area"></div>
-   
+
     <div class="bottom-box-area" v-if="orderStatus == 1">
       <van-button
         class="cancal-btn"
@@ -164,7 +164,7 @@
         plain
         @click="$router.push({name: 'Home'})"
       >再来一单</van-button>
-    </div> -->
+    </div>-->
     <div class="bottom-box-area" v-if="orderStatus == 4">
       <van-button
         class="primary-btn"
@@ -175,7 +175,7 @@
       >再来一单</van-button>
       <van-button class="primary-btn" size="small" round plain @click="commentfn">立即评价</van-button>
     </div>
-    <form class="alipayForm" id="pay_form" ref="form" action="alipay/gateway.do" method="post">
+    <form class="alipayForm" id="pay_form" ref="form" action="/alipay/gateway.do" method="post">
       <input type="hidden" name="timestamp" v-model="alipayData.timestamp">
       <input type="hidden" name="method" :value="alipayData.method">
       <input type="hidden" name="app_id" v-model="alipayData.app_id">
@@ -189,6 +189,7 @@
       <input type="hidden" name="return_url" :value="alipayData.return_url">
       <input type="submit" class="J-btn-submit">
     </form>
+    <div v-show="isFinish && isWeiXin" class="loading"><van-loading size="24px" vertical>加载中...</van-loading></div>
   </div>
 </template>
 <!-- 按钮 -->
@@ -206,7 +207,7 @@ import {
   apiDoPay
 } from "@/request/api";
 import crypto from "@/cryptoUtil";
-import { Toast, Dialog } from "vant";
+import { Toast, Dialog,Loading } from "vant";
 import Clipboard from "clipboard";
 export default {
   components: {
@@ -229,7 +230,8 @@ export default {
       datastr: "",
       signatureStr: "",
       signature: "",
-      orderStatus: -1
+      orderStatus: -1,
+      isFinish: true
     };
   },
   created() {
@@ -240,11 +242,10 @@ export default {
       this.$router.replace({ name: "Home" });
       return false;
     }
-    this.orderStatus = parseFloat(this.orderStatus)
+    this.orderStatus = parseFloat(this.orderStatus);
     // 检查订单
     this.actionCheckOrder(Number(orderidData));
     if (this.isWeiXin) {
-      this.getWebAccessTicket();
       this.getCode();
     }
   },
@@ -258,21 +259,15 @@ export default {
     copy() {
       let clipboard = new Clipboard(".tag-read");
       clipboard.on("success", e => {
-        Toast(this.APPNAME+"复制成功");
+        this.$toast("复制成功");
         // 释放内存
         clipboard.destroy();
       });
       clipboard.on("error", e => {
         // 不支持复制
-        Toast(this.APPNAME+"该浏览器不支持自动复制");
+        this.$toast("该浏览器不支持自动复制");
         // 释放内存
         clipboard.destroy();
-      });
-    },
-    wxConfig() {
-      return new Promise((resolve, reject) => {
-        this.getWebAccessTicket();
-        this.getCode();
       });
     },
     pay() {
@@ -304,12 +299,12 @@ export default {
                 };
                 this.wexinPay();
               } else {
-                Toast(this.APPNAME+result.msg);
+                this.$toast(result.msg);
               }
             })
             .catch(err => {});
         } else {
-          Toast(this.APPNAME+"微信支付需要在微信浏览器上操作哦");
+          this.$toast("微信支付需要在微信浏览器上操作哦");
         }
         // 微信支付
       } else if (this.orderInfo.order.order_info.pay_id == 1) {
@@ -360,12 +355,7 @@ export default {
                             "=" +
                             encodeURIComponent(ele.value);
                         });
-                      let gotoUrl =
-                        document
-                          .querySelector("#pay_form")
-                          .getAttribute("action") +
-                        "?" +
-                        queryParam;
+                      let gotoUrl = "/alipay/gateway.do?" + queryParam;
                       _AP.pay(gotoUrl);
                       return false;
                     },
@@ -379,7 +369,7 @@ export default {
                 }, 500);
               }
             } else {
-              Toast(this.APPNAME+result.msg);
+              this.$toast(result.msg);
             }
           })
           .catch(err => {});
@@ -466,28 +456,31 @@ export default {
             result = JSON.parse(crypto.decrypt(result.data));
             this.jsapi_ticket = result;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getGetWebAccessToken() {
+      this.getWebAccessTicket();
       apiGetWebAccessToken({
         data: crypto.encrypt(JSON.stringify({ code: this.code }))
       })
         .then(result => {
+          this.isFinish = false
           if (result.code == 0) {
             result = JSON.parse(crypto.decrypt(result.data));
             this.open_id = result.openid;
             this.access_token = result.access_token;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.isFinish = false
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getUrlParams(search) {
@@ -533,11 +526,11 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
       return false;
     },
@@ -557,14 +550,14 @@ export default {
           })
             .then(result => {
               if (result.code == 0) {
-                Toast(this.APPNAME+"已经取消订单");
+                this.$toast("已经取消订单");
                 this.$router.push({ name: "Orders" });
               } else {
-                Toast(this.APPNAME+result.msg);
+                this.$toast(result.msg);
               }
             })
             .catch(err => {
-              Toast(this.APPNAME+this.ERRORNETWORK);
+              this.$toast(this.ERRORNETWORK);
             });
         })
         .catch(() => {
@@ -572,7 +565,7 @@ export default {
         });
     },
     remindDelivery() {
-      Toast(this.APPNAME+"已经提醒工作人员尽快安排发货，请耐心等待");
+      this.$toast("已经提醒工作人员尽快安排发货，请耐心等待");
     },
     actionCheckOrder(order_id) {
       apiWatchOrder({
@@ -586,7 +579,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }
@@ -594,6 +587,18 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.loading{
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .bottom-tip-area {
   height: 70px;
 }

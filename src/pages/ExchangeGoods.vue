@@ -135,14 +135,14 @@ export default {
                 this.$router.replace({ name: "Address" });
               })
               .catch(() => {
-                Toast(this.APPNAME+'亲，不添加地址无法购物哦')
+                this.$toast("亲，不添加地址无法购物哦");
               });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onSubmit() {
@@ -163,12 +163,12 @@ export default {
           } else {
             Toast({
               mask: true,
-              message: this.APPNAME+result.msg
+              message: this.APPNAME + result.msg
             });
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     changeSpecification(id, index) {
@@ -179,7 +179,7 @@ export default {
     },
     actionApiBuyNow() {
       if (!this.specificationActive) {
-        Toast(this.APPNAME+"请选择商品规格");
+        this.$toast("请选择商品规格");
         return false;
       }
       apiExchangeGoods({
@@ -196,11 +196,11 @@ export default {
             this.cart_ids.push(result);
             this.actionCheckOrder();
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

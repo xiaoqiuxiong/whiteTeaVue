@@ -53,7 +53,6 @@
         </div>
       </van-list>
     </div>
-    
   </div>
 </template>
 
@@ -109,13 +108,13 @@ export default {
             }
           } else {
             this.finished = true;
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
           this.loading = false;
           this.timer2 = null;
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onSearch() {},

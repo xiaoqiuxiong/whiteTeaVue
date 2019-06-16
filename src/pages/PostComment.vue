@@ -151,7 +151,7 @@ export default {
     submit() {
       // 判断数据
       if (this.content == "" && this.fileList.length < 1) {
-        Toast(this.APPNAME+"评论内容不能为空");
+        this.$toast("评论内容不能为空");
         return false;
       }
       this.count = 0;
@@ -194,11 +194,11 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getToken(file) {
@@ -245,7 +245,7 @@ export default {
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

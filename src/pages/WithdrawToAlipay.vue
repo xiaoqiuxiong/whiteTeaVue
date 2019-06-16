@@ -51,36 +51,51 @@ export default {
       real_amount: 0,
       card_id: "",
       type: 2,
-      name: ""
+      name: "",
+      loadingMsg: ""
     };
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     this.getUserInfo();
   },
   methods: {
     changeAmount() {
-      this.real_amount = parseFloat((this.amount - this.amount * 0.02).toFixed(2));
+      this.real_amount = parseFloat(
+        (this.amount - this.amount * 0.02).toFixed(2)
+      );
     },
     userWithdraw() {
       // 判断数据
       if (!this.card_id) {
-        Toast(this.APPNAME+"请输入支付宝账号");
+        this.$toast("请输入支付宝账号");
         return false;
       }
       if (!this.name) {
-        Toast(this.APPNAME+"请输入真实姓名");
+        this.$toast("请输入真实姓名");
         return false;
       }
       if (!this.amount) {
-        Toast(this.APPNAME+"请输入提现金额");
+        this.$toast("请输入提现金额");
         return false;
       }
       if (this.amount > this.userInfo.user_info.user_money) {
-        Toast(this.APPNAME+"提现金额不能大于可提现金额");
+        this.$toast("提现金额不能大于可提现金额");
         this.amount = this.userInfo.user_info.user_money;
         return false;
       }
       this.amount = parseFloat(this.amount) || 0;
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiUserWithdraw({
         data: crypto.encrypt(
           JSON.stringify({
@@ -93,28 +108,32 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            Toast(this.APPNAME+"提现成功");
+            this.$toast("提现成功");
             this.$router.push({ name: "MyProperty" });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     getUserInfo() {
       apiUserIndex()
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
             this.userInfo = result.data;
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(error => {
-          Toast(this.APPNAME+this.ERRORNETWORK);
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     }
   }

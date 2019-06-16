@@ -2,6 +2,14 @@
   <div>
     <!-- 导航栏 -->
     <van-nav-bar
+      v-if="$route.query.isUser"
+      class="nav-area"
+      :title="$route.meta.title"
+      left-arrow
+      @click-left="$router.push({name: 'User'})"
+    />
+    <van-nav-bar
+      v-if="!$route.query.isUser"
       class="nav-area"
       :title="$route.meta.title"
       left-arrow
@@ -24,7 +32,7 @@
                     :src="defaultAddress"
                   />
                 </div>
-                <div class="bottom" >
+                <div class="bottom">
                   {{
                   allAddress.province.filter(item1 => {
                   return (item1.region_id == item.province);
@@ -114,6 +122,7 @@ let fullPath1 = "";
 export default {
   data() {
     return {
+      loadingMsg: "",
       list: [],
       defaultAddress: require("@/assets/images/default_address.png"),
       isSureOrder: false,
@@ -126,16 +135,24 @@ export default {
     next();
   },
   created() {
+    this.loadingMsg = Toast.loading({
+      duration: 0,
+      forbidClick: true,
+      loadingType: "spinner",
+      message: "loading..."
+    });
     apiUserAddress()
       .then(result => {
+        this.loadingMsg.clear();
         if (result.code == 0) {
           this.list = JSON.parse(crypto.decrypt(result.data));
         } else {
-          Toast(this.APPNAME+result.msg);
+          this.$toast(result.msg);
         }
       })
       .catch(err => {
-        Toast(this.APPNAME+"网络故障，请刷新重试");
+        this.loadingMsg.clear();
+        this.$toast(this.ERRORNETWORK);
       });
   },
   mounted() {
@@ -167,6 +184,12 @@ export default {
       this.$router.push({ name: "AddressEdit", query: { address_id: id } });
     },
     setDefault(id) {
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiSetDefaultAddress({
         data: crypto.encrypt(
           JSON.stringify({
@@ -175,8 +198,9 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            Toast.success(this.APPNAME+"默认收货地址设置成功");
+            this.$toast("默认收货地址设置成功");
             this.list.filter((item, index) => {
               this.list[index].default_address = 0;
               if (item.address_id == id) {
@@ -184,14 +208,21 @@ export default {
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     del(id) {
+      this.loadingMsg = Toast.loading({
+        duration: 0,
+        forbidClick: true,
+        loadingType: "spinner",
+        message: "loading..."
+      });
       apiDelUserAddress({
         data: crypto.encrypt(
           JSON.stringify({
@@ -200,27 +231,29 @@ export default {
         )
       })
         .then(result => {
+          this.loadingMsg.clear();
           if (result.code == 0) {
-            Toast(this.APPNAME+"删除收货地址成功");
+            this.$toast("删除收货地址成功");
             this.list.filter((item, index) => {
               if (item.address_id == id) {
                 this.list.splice(index, 1);
               }
             });
           } else {
-            Toast(this.APPNAME+result.msg);
+            this.$toast(result.msg);
           }
         })
         .catch(err => {
-          Toast(this.APPNAME+"网络故障，请刷新重试");
+          this.loadingMsg.clear();
+          this.$toast(this.ERRORNETWORK);
         });
     },
     onAdd() {
-      Toast(this.APPNAME+"新增地址");
+      this.$toast("新增地址");
     },
 
     onEdit(item, index) {
-      Toast(this.APPNAME+"编辑地址:" + index);
+      this.$toast("编辑地址:" + index);
     }
   },
   computed: {
