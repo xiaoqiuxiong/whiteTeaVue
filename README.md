@@ -1,4 +1,4 @@
-# white_tea_vue
+# 商城项目移动端Vue
 
 > A Vue.js project
 
